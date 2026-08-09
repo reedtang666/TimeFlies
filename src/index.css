@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Noto+Serif+SC:wght@400;700;900&family=Outfit:wght@300;400;600;800;900&family=ZCOOL+XiaoWei&display=swap');
+
+:root {
+  --bg-deep: #030712;
+  --bg-radial: radial-gradient(circle at 50% 0%, #162a4a 0%, #0a1329 50%, #030712 100%);
+  --ice-cyan: #70e4ff;
+  --ice-white: #e6f9ff;
+  --ice-glow: rgba(112, 228, 255, 0.6);
+  --aurora-purple: #c084fc;
+  --gold-crown: #fbbf24;
+  --font-heading: 'Cinzel Decorative', 'Noto Serif SC', serif;
+  --font-num: 'Outfit', sans-serif;
+}
+
+[data-theme="aurora-purple"] {
+  --bg-radial: radial-gradient(circle at 50% 0%, #261238 0%, #11091c 50%, #030712 100%);
+  --ice-cyan: #e879f9;
+  --ice-glow: rgba(232, 121, 249, 0.6);
+}
+
+[data-theme="winter-rose"] {
+  --bg-radial: radial-gradient(circle at 50% 0%, #381226 0%, #1c0915 50%, #030712 100%);
+  --ice-cyan: #f472b6;
+  --ice-glow: rgba(244, 114, 182, 0.6);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-radial);
+  background-attachment: fixed;
+  color: #f0f9ff;
+  font-family: 'Noto Serif SC', -apple-system, sans-serif;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+/* Luxury Ice Glassmorphism */
+.glass-frost-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(13, 27, 54, 0.6) 50%, rgba(6, 14, 30, 0.8) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(112, 228, 255, 0.35);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.5),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+    0 20px 50px rgba(0, 0, 0, 0.6),
+    0 0 30px rgba(112, 228, 255, 0.15);
+  border-radius: 24px;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-frost-card:hover {
+  border-color: rgba(112, 228, 255, 0.7);
+  box-shadow: 
+    inset 0 1px 3px rgba(255, 255, 255, 0.8),
+    0 25px 60px rgba(0, 0, 0, 0.7),
+    0 0 45px rgba(112, 228, 255, 0.35);
+  transform: translateY(-3px) scale(1.01);
+}
+
+/* Crystal Corner Highlights */
+.glass-frost-card::before, .glass-frost-card::after {
+  content: '✦';
+  position: absolute;
+  font-size: 10px;
+  color: var(--ice-cyan);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.glass-frost-card::before { top: 8px; left: 10px; }
+.glass-frost-card::after { bottom: 8px; right: 10px; }
+
+/* Luxury Button */
+.glass-frost-btn {
+  background: linear-gradient(135deg, rgba(112, 228, 255, 0.25) 0%, rgba(14, 165, 233, 0.15) 100%);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(112, 228, 255, 0.5);
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 10px 22px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  transition: all 0.3s ease;
+}
+
+.glass-frost-btn:hover {
+  background: linear-gradient(135deg, rgba(112, 228, 255, 0.5) 0%, rgba(56, 189, 248, 0.3) 100%);
+  border-color: #ffffff;
+  box-shadow: 0 0 30px rgba(112, 228, 255, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+.glass-frost-btn:active {
+  transform: translateY(0);
+}
+
+/* Typography & Neon Glowing Effects */
+.text-heading-elsa {
+  font-family: var(--font-heading);
+  background: linear-gradient(180deg, #ffffff 0%, #d4f8ff 40%, #70e4ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 15px rgba(112, 228, 255, 0.6));
+}
+
+.text-num-crystal {
+  font-family: var(--font-num);
+  background: linear-gradient(180deg, #ffffff 0%, #a5f3fc 60%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 20px rgba(112, 228, 255, 0.8));
+}
+
+.text-gold-glow {
+  background: linear-gradient(180deg, #ffffff 0%, #fde047 60%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.6));
+}
+
+/* Animated Shimmer Line */
+@keyframes iceShimmer {
+  0% { transform: translateX(-150%) rotate(30deg); }
+  100% { transform: translateX(250%) rotate(30deg); }
+}
+
+.ice-shimmer-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.ice-shimmer-bg::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: iceShimmer 4s infinite ease-in-out;
+  pointer-events: none;
+}
+
+/* Floating Animations */
+@keyframes crownFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(3deg); }
+}
+
+.animate-crown {
+  animation: crownFloat 3.5s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.05); }
+}
+
+.animate-halo {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+/* Fallback Core Utilities */
+.min-h-screen { min-height: 100vh; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.relative { position: relative; }
+.fixed { position: fixed; }
+.absolute { position: absolute; }
+.inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+.z-0 { z-index: 0; }
+.z-10 { z-index: 10; }
+.z-20 { z-index: 20; }
+.z-50 { z-index: 50; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1 1 0%; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-5 { gap: 1.25rem; }
+.max-w-4xl { max-width: 56rem; }
+.max-w-xl { max-width: 36rem; }
+.max-w-md { max-width: 28rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.text-center { text-align: center; }
+.overflow-x-hidden { overflow-x: hidden; }
+.pointer-events-none { pointer-events: none; }
+
