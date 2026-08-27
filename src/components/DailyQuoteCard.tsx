@@ -49,7 +49,7 @@ export const DailyQuoteCard = ({ name }: DailyQuoteCardProps) => {
   const card = FROZEN_DAILY_CARDS[currentIndex];
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 my-10 z-10 relative">
+    <div className="w-full max-w-4xl mx-auto px-4 my-10 relative">
       <div className="glass-frost-card p-6 sm:p-8 rounded-3xl border-cyan-300/50 shadow-2xl relative overflow-hidden text-center bg-gradient-to-br from-cyan-950/30 via-slate-950/80 to-purple-950/30">
         <div className="flex items-center justify-between mb-4">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full glass-frost-card text-xs text-cyan-200 border border-cyan-400/30">

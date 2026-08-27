@@ -16,7 +16,7 @@ export const MilestoneCrystals = ({
   const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 my-10 z-10 relative">
+    <div className="w-full max-w-4xl mx-auto px-4 my-10 relative">
       <div className="text-center mb-8">
         <h2 className="text-xl sm:text-2xl font-black text-heading-elsa tracking-wide flex items-center justify-center gap-2">
           <span>🏰</span>
@@ -74,8 +74,8 @@ export const MilestoneCrystals = ({
 
       {/* Milestone Detail Modal */}
       {selectedMilestone && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-xl animate-fadeIn">
-          <div className="glass-frost-card p-8 rounded-3xl max-w-md w-full border-cyan-300/60 shadow-2xl relative text-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fadeIn">
+          <div className="glass-frost-card bg-slate-950/95 p-8 rounded-3xl max-w-md w-full border-cyan-300/60 shadow-2xl relative text-center">
             <button
               onClick={() => setSelectedMilestone(null)}
               className="absolute top-4 right-4 p-2.5 rounded-full glass-frost-card text-cyan-300 hover:text-white"

@@ -15,24 +15,30 @@ export interface PresetAvatar {
   url: string;
 }
 
+const PRINCESS_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%230f172a"/><stop offset="50%" stop-color="%231e3a8a"/><stop offset="100%" stop-color="%230284c7"/></linearGradient></defs><rect width="200" height="200" rx="100" fill="url(%23bg1)"/><text x="100" y="125" font-size="90" text-anchor="middle">👸</text></svg>`;
+
+const SNOWFLAKE_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%230284c7"/><stop offset="50%" stop-color="%2338bdf8"/><stop offset="100%" stop-color="%23c084fc"/></linearGradient></defs><rect width="200" height="200" rx="100" fill="url(%23bg2)"/><text x="100" y="125" font-size="90" text-anchor="middle">❄️</text></svg>`;
+
+const AURORA_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%233b0764"/><stop offset="50%" stop-color="%237e22ce"/><stop offset="100%" stop-color="%2338bdf8"/></linearGradient></defs><rect width="200" height="200" rx="100" fill="url(%23bg3)"/><text x="100" y="125" font-size="90" text-anchor="middle">✨</text></svg>`;
+
 export const PRESET_AVATARS: PresetAvatar[] = [
   {
     id: 'elsa-crown',
     name: '艾莎水晶王冠',
-    emoji: '👑',
-    url: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=300&q=80',
+    emoji: '👸',
+    url: PRINCESS_SVG,
   },
   {
     id: 'snowflake-magic',
     name: '冰雪星光魔法',
     emoji: '❄️',
-    url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80',
+    url: SNOWFLAKE_SVG,
   },
   {
     id: 'aurora-princess',
     name: '极光小公主',
     emoji: '✨',
-    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    url: AURORA_SVG,
   },
 ];
 

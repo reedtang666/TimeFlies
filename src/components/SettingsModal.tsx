@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, Sparkles, Image, Calendar, User, Quote, Palette } from 'lucide-react';
+import { X, Copy, Check, Sparkles, Image, Calendar, User, Quote, Palette, Music } from 'lucide-react';
 import { PRESET_AVATARS, DEFAULT_QUOTES } from '../data/elsaPresetData';
+import { frozenAudio } from '../utils/audioSystem';
+import { loadImageSource } from '../utils/imageHelper';
+import { AvatarCropModal } from './AvatarCropModal';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -36,10 +39,16 @@ export const SettingsModal = ({
   const [quote, setQuote] = useState(initialQuote);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [theme, setTheme] = useState(initialTheme);
+  const [audioUrlInput, setAudioUrlInput] = useState(() => {
+    return localStorage.getItem('timeflies_audio_url') || '';
+  });
   const [copied, setCopied] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [isCropOpen, setIsCropOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    frozenAudio.setAudioUrl(audioUrlInput.trim() || null);
     onSave({ name, dob, quote, avatarUrl, theme });
     onClose();
   };
@@ -58,8 +67,8 @@ export const SettingsModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-      <div className="glass-frost-card p-6 sm:p-8 rounded-3xl max-w-lg w-full border-cyan-300/40 shadow-2xl relative my-8">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md overflow-y-auto">
+      <div className="glass-frost-card bg-slate-950/95 p-6 sm:p-8 rounded-3xl max-w-lg w-full border-cyan-300/40 shadow-2xl relative my-8">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-full glass-frost-card text-cyan-300 hover:text-white"
@@ -108,10 +117,59 @@ export const SettingsModal = ({
 
           {/* Theme Preset Avatar Select */}
           <div>
-            <label className="block text-xs font-semibold text-cyan-200 mb-1.5 flex items-center gap-1.5">
-              <Image className="w-3.5 h-3.5 text-cyan-300" />
-              选择艾莎主题头像 / 自定义链接
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-semibold text-cyan-200 flex items-center gap-1.5">
+                <Image className="w-3.5 h-3.5 text-cyan-300" />
+                女儿头像设置
+              </label>
+
+              <label className="cursor-pointer text-xs font-bold text-white bg-cyan-600/60 hover:bg-cyan-500/80 border border-cyan-300/60 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-md hover:scale-105 transition-all">
+                <span>📁 从手机/电脑选照片</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const src = await loadImageSource(file);
+                        setCropImageSrc(src);
+                        setIsCropOpen(true);
+                      } catch (err) {
+                        alert(err instanceof Error ? err.message : '加载图片失败');
+                      }
+                    }
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
+
+            {/* If local photo is uploaded, show current uploaded preview */}
+            {avatarUrl.startsWith('data:') ? (
+              <div className="p-3 rounded-2xl bg-cyan-950/40 border border-cyan-400/50 flex items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-cyan-300 shadow-md">
+                    <img src={avatarUrl} alt="预览" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white">✨ 已成功选好照片！</div>
+                    <div className="text-[10px] text-cyan-200/70">点击下方“保存魔法配置”即可生效</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAvatarUrl(PRESET_AVATARS[0].url)}
+                  className="text-xs text-rose-300 hover:text-rose-100 underline"
+                >
+                  重置
+                </button>
+              </div>
+            ) : null}
+
+            {/* Presets */}
+            <div className="text-[11px] text-cyan-300/70 mb-1">或选择预设卡通图标：</div>
             <div className="grid grid-cols-3 gap-2 mb-2">
               {PRESET_AVATARS.map((pa) => (
                 <button
@@ -129,13 +187,16 @@ export const SettingsModal = ({
                 </button>
               ))}
             </div>
-            <input
-              type="url"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="或粘贴自定义头像图片 URL..."
-              className="w-full px-3 py-2 rounded-xl bg-slate-900/60 border border-cyan-500/30 text-white text-xs focus:outline-none focus:border-cyan-400"
-            />
+
+            {!avatarUrl.startsWith('data:') && (
+              <input
+                type="text"
+                value={avatarUrl}
+                onChange={(e) => setAvatarUrl(e.target.value)}
+                placeholder="或粘贴网络图片 URL（可选）..."
+                className="w-full px-3 py-2 rounded-xl bg-slate-900/60 border border-cyan-500/30 text-white text-xs focus:outline-none focus:border-cyan-400"
+              />
+            )}
           </div>
 
           {/* Quote */}
@@ -171,7 +232,7 @@ export const SettingsModal = ({
               <Palette className="w-3.5 h-3.5 text-cyan-300" />
               冰雪视觉主题
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2 mb-3">
               {[
                 { id: 'ice-blue', label: '🧊 经典冰蓝' },
                 { id: 'aurora-purple', label: '🌌 极光魅紫' },
@@ -191,6 +252,60 @@ export const SettingsModal = ({
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Custom Audio Track */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-cyan-200 flex items-center gap-1.5">
+                <Music className="w-3.5 h-3.5 text-cyan-300" />
+                背景音乐设置
+              </label>
+
+              {audioUrlInput && (
+                <button
+                  type="button"
+                  onClick={() => setAudioUrlInput('')}
+                  className="text-[11px] text-cyan-300 hover:text-white underline"
+                >
+                  恢复本地默认音乐
+                </button>
+              )}
+            </div>
+
+            {/* Current default / custom status badge */}
+            {!audioUrlInput ? (
+              <div className="p-2.5 rounded-xl bg-cyan-950/60 border border-cyan-400/40 text-xs text-cyan-200 flex items-center gap-2 mb-2">
+                <span className="text-sm">🎵</span>
+                <div>
+                  <div className="font-bold text-white text-[11px]">
+                    已默认启用内置本地《冰雪奇缘》主题曲 · Let It Go
+                  </div>
+                  <div className="text-[10px] text-cyan-300/70">
+                    零网络依赖 · 本地原声秒级播放 · 双语高清版
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-2.5 rounded-xl bg-purple-950/50 border border-purple-400/40 text-xs text-purple-200 flex items-center gap-2 mb-2">
+                <span className="text-sm">🔗</span>
+                <div>
+                  <div className="font-bold text-white text-[11px]">正在使用自定义在线音乐链接</div>
+                  <div className="text-[10px] text-purple-300/70 truncate max-w-xs">{audioUrlInput}</div>
+                </div>
+              </div>
+            )}
+
+            <input
+              type="url"
+              value={audioUrlInput}
+              onChange={(e) => setAudioUrlInput(e.target.value)}
+              placeholder="自定义在线 MP3 音轨链接（留空则默认使用本地 Let It Go）..."
+              className="w-full px-3 py-2 rounded-xl bg-slate-900/60 border border-cyan-500/30 text-white text-xs focus:outline-none focus:border-cyan-400 font-mono"
+            />
+            <p className="text-[10px] text-cyan-300/60 mt-1">
+              * 提示：留空即默认使用本地内置主题曲；如需特定在线网络 MP3 链接可填入上方输入框。
+            </p>
           </div>
 
           {/* Action buttons */}
@@ -213,6 +328,17 @@ export const SettingsModal = ({
           </div>
         </form>
       </div>
+
+      {/* Avatar Circular Cropper Modal */}
+      <AvatarCropModal
+        isOpen={isCropOpen}
+        imageSrc={cropImageSrc}
+        onClose={() => setIsCropOpen(false)}
+        onConfirmCrop={(croppedUrl) => {
+          setAvatarUrl(croppedUrl);
+          setIsCropOpen(false);
+        }}
+      />
     </div>
   );
 };

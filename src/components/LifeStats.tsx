@@ -46,7 +46,7 @@ function LifeStatsComponent({ growthTime, name }: LifeStatsProps) {
   ];
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 my-10 z-10 relative">
+    <div className="w-full max-w-4xl mx-auto px-4 my-10 relative">
       <div className="text-center mb-8">
         <h2 className="text-xl sm:text-2xl font-black text-heading-elsa tracking-wide flex items-center justify-center gap-2">
           <span>✨</span>

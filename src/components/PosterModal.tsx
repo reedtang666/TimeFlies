@@ -49,8 +49,8 @@ export const PosterModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-      <div className="glass-frost-card p-6 rounded-3xl max-w-md w-full border-cyan-300/40 shadow-2xl relative my-8 text-center">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md overflow-y-auto">
+      <div className="glass-frost-card bg-slate-950/95 p-6 rounded-3xl max-w-md w-full border-cyan-300/40 shadow-2xl relative my-8 text-center">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-full glass-frost-card text-cyan-300 hover:text-white"

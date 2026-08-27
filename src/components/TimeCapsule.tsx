@@ -57,7 +57,7 @@ export const TimeCapsule = ({ currentAgeYears, name }: TimeCapsuleProps) => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 my-12 z-10 relative">
+    <div className="w-full max-w-4xl mx-auto px-4 my-12 relative">
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-frost-card text-xs text-cyan-200 border border-cyan-400/30 mb-2">
           <Mail className="w-3.5 h-3.5 text-cyan-300" />
@@ -127,8 +127,8 @@ export const TimeCapsule = ({ currentAgeYears, name }: TimeCapsuleProps) => {
 
       {/* Letter Reading Modal */}
       {selectedLetter && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fadeIn">
-          <div className="glass-frost-card p-8 rounded-3xl max-w-lg w-full border-cyan-300/60 shadow-2xl relative text-left">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fadeIn">
+          <div className="glass-frost-card bg-slate-950/95 p-8 rounded-3xl max-w-lg w-full border-cyan-300/60 shadow-2xl relative text-left">
             <button
               onClick={() => setSelectedLetter(null)}
               className="absolute top-4 right-4 p-2.5 rounded-full glass-frost-card text-cyan-300 hover:text-white"

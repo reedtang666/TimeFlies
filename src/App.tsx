@@ -7,13 +7,19 @@ import { MilestoneCrystals } from './components/MilestoneCrystals';
 import { TimeCapsule } from './components/TimeCapsule';
 import { PhotoGallery } from './components/PhotoGallery';
 import { DailyQuoteCard } from './components/DailyQuoteCard';
+import { ElsaIcePiano } from './components/ElsaIcePiano';
+import { ArendellePassport } from './components/ArendellePassport';
 import { SettingsModal } from './components/SettingsModal';
 import { PosterModal } from './components/PosterModal';
 import { IceMagicOverlay } from './components/IceMagicOverlay';
 import { ElsaCastleGraphic } from './components/ElsaCastleGraphic';
+import { AvatarCropModal } from './components/AvatarCropModal';
+import { FloatingMusicBar } from './components/FloatingMusicBar';
 import { calculateGrowthTime, type GrowthTime } from './utils/timeCalculator';
 import { DEFAULT_MILESTONES, PRESET_AVATARS } from './data/elsaPresetData';
 import { triggerFrozenMagicEffect } from './utils/magicEffects';
+import { loadImageSource } from './utils/imageHelper';
+import { frozenAudio } from './utils/audioSystem';
 
 export function App() {
   const getInitialParams = () => {
@@ -54,8 +60,20 @@ export function App() {
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isMagicActive, setIsMagicActive] = useState(false);
+
+  // Avatar Cropper state
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+
+  // Subscribe to global audio state
+  useEffect(() => {
+    const unsub = frozenAudio.subscribe((state) => {
+      setIsAudioPlaying(state.isPlaying);
+    });
+    return unsub;
+  }, []);
 
   // Apply Theme attribute to document body
   useEffect(() => {
@@ -96,6 +114,28 @@ export function App() {
     triggerFrozenMagicEffect();
   };
 
+  const handleUpdateAvatar = (newAvatarUrl: string) => {
+    setAvatarUrl(newAvatarUrl);
+    localStorage.setItem('timeflies_avatar', newAvatarUrl);
+    setIsMagicActive(true);
+    triggerFrozenMagicEffect();
+  };
+
+  const handleRequestCrop = async (file: File) => {
+    try {
+      const src = await loadImageSource(file);
+      setCropImageSrc(src);
+      setIsCropModalOpen(true);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '加载图片失败');
+    }
+  };
+
+  const handleConfirmCrop = (croppedDataUrl: string) => {
+    handleUpdateAvatar(croppedDataUrl);
+    setIsCropModalOpen(false);
+  };
+
   const handleCastMagic = () => {
     setIsMagicActive(true);
     triggerFrozenMagicEffect();
@@ -113,22 +153,36 @@ export function App() {
       />
 
       {/* Main Container */}
-      <div className="relative z-10 w-full flex-1 flex flex-col">
+      <div className="relative z-10 w-full flex-1 flex flex-col pb-16 sm:pb-20">
         {/* Header Section */}
         <ElsaHeader
           name={name}
           quote={quote}
           avatarUrl={avatarUrl}
           theme={theme}
-          isMuted={isMuted}
-          onToggleAudio={() => setIsMuted(!isMuted)}
+          isMuted={!isAudioPlaying}
+          onToggleAudio={() => (isAudioPlaying ? frozenAudio.pause() : frozenAudio.play())}
           onOpenSettings={() => setIsSettingsOpen(true)}
           onCastMagic={handleCastMagic}
           onOpenShare={() => setIsShareOpen(true)}
+          onUpdateAvatar={handleUpdateAvatar}
+          onRequestCrop={handleRequestCrop}
         />
 
         {/* Hero Counter */}
         <TimerDisplay growthTime={growthTime} name={name} />
+
+        {/* Arendelle Royal Princess Passport Certificate */}
+        <ArendellePassport
+          name={name}
+          dob={dob}
+          avatarUrl={avatarUrl}
+          onUpdateAvatar={handleUpdateAvatar}
+          onRequestCrop={handleRequestCrop}
+        />
+
+        {/* Elsa's Magical Ice Chime / Piano */}
+        <ElsaIcePiano name={name} />
 
         {/* Daily Quote Card */}
         <DailyQuoteCard name={name} />
@@ -153,6 +207,9 @@ export function App() {
         <ElsaCastleGraphic />
       </div>
 
+      {/* Persistent Floating Music Controller with Draggable Seek Bar */}
+      <FloatingMusicBar />
+
       {/* Settings Modal */}
       <SettingsModal
         isOpen={isSettingsOpen}
@@ -174,6 +231,14 @@ export function App() {
         quote={quote}
         avatarUrl={avatarUrl}
         growthTime={growthTime}
+      />
+
+      {/* Avatar Circular Cropper Modal */}
+      <AvatarCropModal
+        isOpen={isCropModalOpen}
+        imageSrc={cropImageSrc}
+        onClose={() => setIsCropModalOpen(false)}
+        onConfirmCrop={handleConfirmCrop}
       />
 
       {/* Footer */}
