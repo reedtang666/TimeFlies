@@ -241,7 +241,11 @@ export function App() {
         />
 
         {/* Time Capsule Letters from Dad & Mom */}
-        <TimeCapsule currentAgeYears={growthTime.years} name={name} />
+        <TimeCapsule
+          currentAgeYears={growthTime.years}
+          name={name}
+          onRequireAuth={runWithAuth}
+        />
 
         {/* Ice Castle Horizon Graphic */}
         <ElsaCastleGraphic />

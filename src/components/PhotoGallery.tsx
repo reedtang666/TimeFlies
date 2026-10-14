@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Sparkles, X, Upload, RotateCcw, Eye, Heart, Plus, Trash2, Edit3, Check } from 'lucide-react';
+import { Camera, Sparkles, X, Upload, RotateCcw, Eye, Heart, Plus, Trash2, Edit3, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { frozenAudio } from '../utils/audioSystem';
 import { processGalleryImage } from '../utils/imageHelper';
 
@@ -319,8 +319,48 @@ export const PhotoGallery = ({ name, currentAgeYears = 4, onRequireAuth }: Photo
   const maxAge = photos.length > 0 ? Math.max(...photos.map((p) => p.age)) : 4;
   const nextAgeToAdd = maxAge + 1;
 
+  const currentPhotoIndex = selectedPhoto
+    ? photos.findIndex((p) => p.id === selectedPhoto.id)
+    : -1;
+
+  const handlePrevPhoto = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (currentPhotoIndex > 0) {
+      const prev = photos[currentPhotoIndex - 1];
+      setSelectedPhoto(prev);
+      setIsEditingBlessing(false);
+      setEditTitle(prev.title);
+      setEditBlessing(prev.blessing);
+      frozenAudio.playBell(1100, 0.15);
+    }
+  };
+
+  const handleNextPhoto = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (currentPhotoIndex >= 0 && currentPhotoIndex < photos.length - 1) {
+      const next = photos[currentPhotoIndex + 1];
+      setSelectedPhoto(next);
+      setIsEditingBlessing(false);
+      setEditTitle(next.title);
+      setEditBlessing(next.blessing);
+      frozenAudio.playBell(1300, 0.15);
+    }
+  };
+
+  // Keyboard navigation for Lightbox
+  useEffect(() => {
+    if (!selectedPhoto) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedPhoto(null);
+      if (e.key === 'ArrowLeft') handlePrevPhoto();
+      if (e.key === 'ArrowRight') handleNextPhoto();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedPhoto, currentPhotoIndex, photos]);
+
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 my-12 relative">
+    <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 my-10 relative">
       {/* Hidden File Input */}
       <input
         ref={fileInputRef}
@@ -331,8 +371,8 @@ export const PhotoGallery = ({ name, currentAgeYears = 4, onRequireAuth }: Photo
       />
 
       {/* Header section */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-frost-card text-xs text-cyan-200 border border-cyan-400/30 mb-2">
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full glass-frost-card text-[11px] text-cyan-200 border border-cyan-400/30 mb-2">
           <Camera className="w-3.5 h-3.5 text-cyan-300" />
           <span>Disney Frozen {minAge}-{maxAge} Years Photo Album</span>
         </div>
@@ -343,16 +383,15 @@ export const PhotoGallery = ({ name, currentAgeYears = 4, onRequireAuth }: Photo
           <span>👑</span>
         </h2>
         <p className="text-xs sm:text-sm text-cyan-200/80 mt-1">
-          记录从初生萌芽到 {maxAge} 周岁的每一步闪耀成长 · 支持上传本地照片与扩展未来每一岁
+          记录从初生萌芽到 {maxAge} 周岁的闪耀足迹 · 点击任意卡片查看高清大图与寄语
         </p>
       </div>
 
-      {/* Responsive Grid with Dynamic Cards + Add Button */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      {/* Compact Multi-Column Grid: 2 cols on mobile, 3 on sm, 4 on md, 5 on lg */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4.5">
         {photos.map((photo) => {
           const isDragTarget = dragOverId === photo.id;
           const isCurrentUploading = uploadingId === photo.id;
-          const isCustomPhoto = photo.url.startsWith('data:') || photo.url.startsWith('blob:');
 
           return (
             <div
@@ -361,129 +400,95 @@ export const PhotoGallery = ({ name, currentAgeYears = 4, onRequireAuth }: Photo
               onDragOver={(e) => handleDragOver(photo.id, e)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(photo.id, e)}
-              className={`glass-frost-card p-3.5 rounded-2xl cursor-pointer group hover:scale-[1.02] transition-all duration-300 border flex flex-col justify-between relative overflow-hidden ${
+              className={`glass-frost-card p-2 sm:p-2.5 rounded-2xl cursor-pointer group hover:scale-[1.03] transition-all duration-300 border flex flex-col justify-between relative overflow-hidden ${
                 isDragTarget
-                  ? 'border-cyan-300 ring-2 ring-cyan-400 shadow-[0_0_25px_rgba(112,228,255,0.6)] bg-cyan-950/60'
-                  : 'border-cyan-300/40 hover:border-cyan-300 hover:shadow-[0_0_20px_rgba(112,228,255,0.3)]'
+                  ? 'border-cyan-300 ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(112,228,255,0.6)] bg-cyan-950/60'
+                  : 'border-cyan-300/30 hover:border-cyan-300 hover:shadow-[0_0_15px_rgba(112,228,255,0.3)]'
               }`}
             >
-              <div>
-                {/* Photo Frame */}
-                <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-3 relative bg-slate-950 shadow-md">
-                  <img
-                    src={photo.url}
-                    alt={photo.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+              {/* Photo Frame - Square aspect ratio for neat, uniform album grid */}
+              <div className="w-full aspect-square rounded-xl overflow-hidden relative bg-slate-950 shadow-md">
+                <img
+                  src={photo.url}
+                  alt={photo.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
 
-                  {/* Age Badge */}
-                  <div className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-slate-950/80 text-[11px] font-black text-cyan-200 border border-cyan-400/40 backdrop-blur-md shadow">
-                    {photo.date}
-                  </div>
-
-                  {/* Delete Button for extra added cards */}
-                  {photo.age > 4 && (
-                    <button
-                      type="button"
-                      onClick={(e) => handleDeletePhoto(photo.id, photo.age, e)}
-                      className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-950/80 text-rose-300 hover:text-white hover:bg-rose-600/80 border border-rose-400/30 backdrop-blur-md transition-all shadow"
-                      title="移除此卡片"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-
-                  {/* Uploading Overlay */}
-                  {isCurrentUploading && (
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-cyan-300 gap-1.5">
-                      <Sparkles className="w-6 h-6 animate-spin text-cyan-300" />
-                      <span className="text-xs font-bold">正在导入照片...</span>
-                    </div>
-                  )}
-
-                  {/* Drag Target Notice */}
-                  {isDragTarget && (
-                    <div className="absolute inset-0 bg-cyan-950/85 backdrop-blur-sm flex flex-col items-center justify-center text-cyan-200 border-2 border-dashed border-cyan-300">
-                      <Upload className="w-7 h-7 text-cyan-300 animate-bounce mb-1" />
-                      <span className="text-xs font-black text-white">松开立即更换照片</span>
-                    </div>
-                  )}
-
-                  {/* Hover Quick Action Toolbar on Photo */}
-                  <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
-                    <button
-                      type="button"
-                      onClick={(e) => handleTriggerUpload(photo.id, e)}
-                      className="px-3 py-1.5 rounded-full bg-cyan-600/90 hover:bg-cyan-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg border border-cyan-300/80 transition-all hover:scale-105"
-                      title="上传电脑中的真实照片"
-                    >
-                      <Camera className="w-3.5 h-3.5" />
-                      <span>更换照片</span>
-                    </button>
-
-                    <span className="p-1.5 rounded-full bg-slate-900/80 text-cyan-200 border border-cyan-400/40">
-                      <Eye className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
+                {/* Age Badge */}
+                <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-slate-950/85 text-[10px] sm:text-xs font-black text-cyan-200 border border-cyan-400/40 backdrop-blur-md shadow">
+                  {photo.age} 周岁
                 </div>
 
-                {/* Title & Blessing Content */}
-                <div className="px-1 space-y-1.5 text-left">
-                  <h3 className="text-xs sm:text-sm font-black text-white group-hover:text-cyan-200 transition-colors">
-                    {photo.title}
-                  </h3>
+                {/* Delete Button for extra added cards */}
+                {photo.age > 4 && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeletePhoto(photo.id, photo.age, e)}
+                    className="absolute top-1.5 right-1.5 p-1 rounded-full bg-slate-950/80 text-rose-300 hover:text-white hover:bg-rose-600/80 border border-rose-400/30 backdrop-blur-md transition-all shadow"
+                    title="移除此卡片"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                )}
 
-                  <p className="text-[11px] text-cyan-100/80 leading-relaxed font-light line-clamp-3 bg-slate-950/40 p-2 rounded-xl border border-cyan-500/20 italic">
-                    {photo.blessing}
-                  </p>
+                {/* Uploading Overlay */}
+                {isCurrentUploading && (
+                  <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-cyan-300 gap-1">
+                    <Sparkles className="w-5 h-5 animate-spin text-cyan-300" />
+                    <span className="text-[10px] font-bold">导入中...</span>
+                  </div>
+                )}
+
+                {/* Drag Target Notice */}
+                {isDragTarget && (
+                  <div className="absolute inset-0 bg-cyan-950/85 backdrop-blur-sm flex flex-col items-center justify-center text-cyan-200 border-2 border-dashed border-cyan-300">
+                    <Upload className="w-6 h-6 text-cyan-300 animate-bounce mb-1" />
+                    <span className="text-[10px] font-black text-white">松开更换</span>
+                  </div>
+                )}
+
+                {/* Hover / Tap Hint Overlay */}
+                <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1 pointer-events-none">
+                  <span className="px-2.5 py-1 rounded-full bg-cyan-600/90 text-white text-[10px] font-bold flex items-center gap-1 shadow-lg border border-cyan-300/80">
+                    <Eye className="w-3 h-3" />
+                    <span>看大图</span>
+                  </span>
                 </div>
               </div>
 
-              {/* Card Footer Actions */}
-              <div className="mt-3 pt-2 border-t border-cyan-500/20 flex items-center justify-between text-[11px]">
-                <button
-                  type="button"
-                  onClick={(e) => handleTriggerUpload(photo.id, e)}
-                  className="text-cyan-300 hover:text-white flex items-center gap-1 text-[11px] font-medium"
-                >
-                  <Upload className="w-3 h-3" />
-                  <span>{isCustomPhoto ? '重新选图' : '上传照片'}</span>
-                </button>
-
-                {isCustomPhoto && (
-                  <button
-                    type="button"
-                    onClick={(e) => handleResetPhoto(photo.id, e)}
-                    className="text-rose-300/80 hover:text-rose-200 flex items-center gap-1 text-[10px]"
-                    title="恢复默认插画"
-                  >
-                    <RotateCcw className="w-2.5 h-2.5" />
-                    <span>重置</span>
-                  </button>
-                )}
+              {/* Compact Caption */}
+              <div className="mt-1.5 px-0.5 text-center">
+                <div className="text-[11px] sm:text-xs font-bold text-white group-hover:text-cyan-200 truncate">
+                  {photo.title.split('·')[1]?.trim() || photo.title}
+                </div>
+                <div className="text-[9px] sm:text-[10px] text-cyan-300/60 flex items-center justify-center gap-1 mt-0.5">
+                  <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
+                  <span>点击看大图与寄语</span>
+                </div>
               </div>
             </div>
           );
         })}
 
-        {/* Dynamic Add Next Age Card */}
-        <div
+      </div>
+
+      {/* Centered Add Button Below Photo Grid */}
+      <div className="mt-5 sm:mt-6 flex justify-center">
+        <button
+          type="button"
           onClick={handleAddNextAge}
-          className="glass-frost-card p-6 rounded-2xl cursor-pointer group hover:scale-[1.02] transition-all duration-300 border-2 border-dashed border-cyan-400/40 hover:border-cyan-300 flex flex-col items-center justify-center min-h-[260px] text-center bg-cyan-950/20 hover:bg-cyan-950/40 shadow-inner"
+          className="group inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-2.5 rounded-full glass-frost-card border border-cyan-400/35 hover:border-cyan-300 text-cyan-200 hover:text-white bg-slate-900/60 hover:bg-cyan-950/60 shadow-[0_0_20px_rgba(112,228,255,0.15)] hover:shadow-[0_0_25px_rgba(112,228,255,0.3)] transition-all hover:scale-105 active:scale-95"
         >
-          <div className="w-14 h-14 rounded-full bg-cyan-500/20 group-hover:bg-cyan-500/30 border border-cyan-300/50 flex items-center justify-center text-cyan-200 group-hover:text-white transition-all mb-3 shadow-[0_0_20px_rgba(112,228,255,0.3)] group-hover:scale-110">
-            <Plus className="w-7 h-7" />
+          <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-cyan-500/20 group-hover:bg-cyan-500/40 flex items-center justify-center text-cyan-300 group-hover:text-white transition-colors">
+            <Plus className="w-3.5 h-3.5" />
           </div>
-          <h3 className="text-sm font-bold text-white group-hover:text-cyan-200 transition-colors">
-            添加【{nextAgeToAdd} 周岁】相册
-          </h3>
-          <p className="text-[11px] text-cyan-300/60 mt-1.5 max-w-[180px]">
-            为宝贝的成长记录新的一岁 · 自动生成精选祝福语
-          </p>
-          <span className="mt-3 text-[10px] px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-200">
-            ✨ 点击解锁新一年
+          <span className="text-xs sm:text-sm font-bold tracking-wide">
+            添加【{nextAgeToAdd} 周岁】成长相册
           </span>
-        </div>
+          <span className="text-[10px] text-cyan-300/70 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-400/20">
+            ✨ 解锁新一年
+          </span>
+        </button>
       </div>
 
       {/* Photo Lightbox & Blessing Modal */}
@@ -492,28 +497,84 @@ export const PhotoGallery = ({ name, currentAgeYears = 4, onRequireAuth }: Photo
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelectedPhoto(null);
           }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fadeIn"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/90 backdrop-blur-xl animate-fadeIn"
         >
-          <div className="glass-frost-card bg-slate-950/95 p-6 sm:p-8 rounded-3xl max-w-2xl w-full border-cyan-300/60 shadow-2xl relative text-center max-h-[92vh] overflow-y-auto custom-scrollbar">
-            <button
-              onClick={() => setSelectedPhoto(null)}
-              aria-label="关闭"
-              className="absolute top-4 right-4 p-2.5 rounded-full glass-frost-card text-cyan-300 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
+          <div className="glass-frost-card bg-slate-950/95 p-5 sm:p-7 rounded-3xl max-w-2xl w-full border-cyan-300/60 shadow-2xl relative text-center max-h-[92vh] overflow-y-auto custom-scrollbar">
+            {/* Top Navigation & Close Bar */}
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-cyan-500/20">
+              <div className="flex items-center gap-2 text-xs text-cyan-200 font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/40">
+                  {selectedPhoto.age} 周岁
+                </span>
+                <span className="text-[11px] text-cyan-300/60">
+                  ({currentPhotoIndex + 1} / {photos.length})
+                </span>
+              </div>
 
-            {/* Lightbox Image Frame */}
-            <div className="w-full max-h-[50vh] rounded-2xl overflow-hidden border border-cyan-300/40 my-3 shadow-2xl bg-slate-950 flex items-center justify-center relative">
+              <div className="flex items-center gap-1.5">
+                {/* Prev / Next in Header */}
+                <button
+                  type="button"
+                  onClick={handlePrevPhoto}
+                  disabled={currentPhotoIndex <= 0}
+                  className="p-1.5 rounded-full glass-frost-card text-cyan-300 hover:text-white disabled:opacity-30 disabled:hover:text-cyan-300 transition-colors"
+                  title="查看上一周岁 (或按键盘 ←)"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextPhoto}
+                  disabled={currentPhotoIndex >= photos.length - 1}
+                  className="p-1.5 rounded-full glass-frost-card text-cyan-300 hover:text-white disabled:opacity-30 disabled:hover:text-cyan-300 transition-colors"
+                  title="查看下一周岁 (或按键盘 →)"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPhoto(null)}
+                  aria-label="关闭"
+                  className="p-1.5 rounded-full glass-frost-card text-cyan-300 hover:text-white ml-1 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Lightbox Image Frame with Quick Next/Prev floating arrows */}
+            <div className="w-full max-h-[50vh] rounded-2xl overflow-hidden border border-cyan-300/40 my-3 shadow-2xl bg-slate-950 flex items-center justify-center relative group">
               <img
                 src={selectedPhoto.url}
                 alt={selectedPhoto.title}
                 className="w-full h-full max-h-[50vh] object-contain"
               />
+
+              {/* Side Floating Arrow Buttons */}
+              {currentPhotoIndex > 0 && (
+                <button
+                  type="button"
+                  onClick={handlePrevPhoto}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-cyan-200 hover:text-white hover:bg-slate-950 border border-cyan-400/30 backdrop-blur-md opacity-80 group-hover:opacity-100 transition-all"
+                  title="上一岁"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              )}
+              {currentPhotoIndex < photos.length - 1 && (
+                <button
+                  type="button"
+                  onClick={handleNextPhoto}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-950/70 text-cyan-200 hover:text-white hover:bg-slate-950 border border-cyan-400/30 backdrop-blur-md opacity-80 group-hover:opacity-100 transition-all"
+                  title="下一岁"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              )}
             </div>
 
             {/* Details & Tailored Birthday Blessing */}
-            <div className="space-y-3 mt-4 text-left">
+            <div className="space-y-3 mt-3 text-left">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 {isEditingBlessing ? (
                   <input
@@ -524,17 +585,17 @@ export const PhotoGallery = ({ name, currentAgeYears = 4, onRequireAuth }: Photo
                     placeholder="输入周岁标题..."
                   />
                 ) : (
-                  <h3 className="text-lg sm:text-xl font-black text-heading-elsa">
+                  <h3 className="text-base sm:text-lg font-black text-heading-elsa">
                     {selectedPhoto.title}
                   </h3>
                 )}
-                <span className="text-xs px-3 py-1 rounded-full glass-frost-card text-cyan-300 font-bold border border-cyan-400/40 self-start sm:self-auto">
+                <span className="text-xs px-2.5 py-0.5 rounded-full glass-frost-card text-cyan-300 font-bold border border-cyan-400/40 self-start sm:self-auto">
                   {selectedPhoto.date}
                 </span>
               </div>
 
               {/* Warm Blessing Box with Inline Editing Support */}
-              <div className="bg-slate-950/70 p-4 rounded-2xl border border-cyan-400/30 shadow-inner relative">
+              <div className="bg-slate-950/70 p-3.5 rounded-2xl border border-cyan-400/30 shadow-inner relative">
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-1.5 text-xs text-amber-300 font-bold">
                     <Heart className="w-3.5 h-3.5 fill-amber-300" />
@@ -588,17 +649,32 @@ export const PhotoGallery = ({ name, currentAgeYears = 4, onRequireAuth }: Photo
             </div>
 
             {/* Modal Bottom Controls */}
-            <div className="mt-5 pt-3 border-t border-cyan-400/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-              <button
-                type="button"
-                onClick={(e) => handleTriggerUpload(selectedPhoto.id, e)}
-                className="glass-frost-btn text-xs py-2 px-4 bg-cyan-600/40 border-cyan-300 text-white w-full sm:w-auto justify-center"
-              >
-                <Camera className="w-4 h-4 text-cyan-300" />
-                <span>更换此周岁的本地照片 📸</span>
-              </button>
+            <div className="mt-4 pt-3 border-t border-cyan-400/20 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={(e) => handleTriggerUpload(selectedPhoto.id, e)}
+                  className="glass-frost-btn text-xs py-2 px-3.5 bg-cyan-600/40 border-cyan-300 text-white flex-1 sm:flex-initial justify-center"
+                >
+                  <Camera className="w-3.5 h-3.5 text-cyan-300" />
+                  <span>更换此周岁照片 📸</span>
+                </button>
+
+                {(selectedPhoto.url.startsWith('data:') || selectedPhoto.url.startsWith('blob:')) && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleResetPhoto(selectedPhoto.id, e)}
+                    className="glass-frost-btn text-xs py-2 px-3 text-rose-300 hover:text-white border-rose-500/40"
+                    title="恢复默认插画"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>重置</span>
+                  </button>
+                )}
+              </div>
 
               <button
+                type="button"
                 onClick={() => setSelectedPhoto(null)}
                 className="glass-frost-btn text-xs py-2 px-5 w-full sm:w-auto justify-center"
               >
