@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { Camera, Sparkles, X, Upload, RotateCcw, Eye, Heart } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Camera, Sparkles, X, Upload, RotateCcw, Eye, Heart, Plus, Trash2, Edit3, Check } from 'lucide-react';
 import { frozenAudio } from '../utils/audioSystem';
 import { processGalleryImage } from '../utils/imageHelper';
 
@@ -12,65 +12,135 @@ export interface PhotoMilestoneItem {
   blessing: string;
 }
 
-const DEFAULT_AGE_PHOTOS: PhotoMilestoneItem[] = [
-  {
-    id: 'age-1',
-    age: 1,
+const PRESET_AGE_TEMPLATES: Record<number, { title: string; blessing: string; url: string }> = {
+  1: {
     title: '一周岁 · 蹒跚学步的小精灵 👣',
-    date: '1 周岁纪念',
-    url: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80',
     blessing: '“第一步摇摇晃晃，却勇敢地迈向了无垠的奇妙世界。愿你永远被爱与温柔环绕，无忧无虑，健康快乐成长！”',
+    url: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80',
   },
-  {
-    id: 'age-2',
-    age: 2,
+  2: {
     title: '两周岁 · 牙牙学语的小太阳 ☀️',
-    date: '2 周岁纪念',
-    url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
     blessing: '“清脆的笑声与软糯的声音，是世间最动听的魔法咒语。愿你的小世界里永远充满阳光、欢歌与数不尽的惊喜！”',
+    url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
   },
-  {
-    id: 'age-3',
-    age: 3,
+  3: {
     title: '三周岁 · 戴上皇冠的小公主 👑',
-    date: '3 周岁纪念',
-    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
     blessing: '“穿上艾莎最亮眼的冰晶长裙，眼里闪耀着对梦想的憧憬。做自己可爱纯真又勇敢骄傲的小公主，尽情奔跑在星光之下！”',
+    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
   },
-  {
-    id: 'age-4',
-    age: 4,
+  4: {
     title: '四周岁 · 闪耀绽放的冰雪小女王 ✨',
-    date: '4 周岁纪念',
-    url: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=800&q=80',
     blessing: '“四周岁的你像晶莹璀璨的冰晶，聪明懂事、自信闪亮。愿你如艾莎女王般勇敢坚定，乘风破浪，绽放独一无二的光芒！”',
+    url: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=800&q=80',
   },
-];
+  5: {
+    title: '五周岁 · 充满奇思妙想的探索家 🚀',
+    blessing: '“五周岁的你开始用天马行空的想象力装点世界，每一天都有新的好奇与发现。愿你保持热爱，勇敢奔向属于你的星辰大海！”',
+    url: 'https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?auto=format&fit=crop&w=800&q=80',
+  },
+  6: {
+    title: '六周岁 · 背上小书包的快乐精灵 🎒',
+    blessing: '“六周岁迎来了崭新的成长篇章，学会独立、拥抱知识与纯真友谊。愿你心中永远盛开温暖与阳光，自由而快乐地飞翔！”',
+    url: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=800&q=80',
+  },
+  7: {
+    title: '七周岁 · 智慧与勇气兼备的小小骑士 🌟',
+    blessing: '“七周岁的你眼眸明亮，学会了更多的本领与包容。愿你像冰雪王国里的晨曦，自信坚韧，温暖自己也照亮身边的人！”',
+    url: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=800&q=80',
+  },
+  8: {
+    title: '八周岁 · 优雅独立的小小艺术家 🎨',
+    blessing: '“八周岁的你用画笔与笑颜记录美好生活，拥有独特的灵气与光芒。愿你随心追逐热爱，在广阔天地间尽情绽放光彩！”',
+    url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
+  },
+  9: {
+    title: '九周岁 · 怀揣梦想与初心的追光者 🌈',
+    blessing: '“九周岁的成长脚步愈发沉稳有力，懂得坚持也懂得关爱。愿你永葆纯真善良，无惧未知挑战，书写属于你的精彩篇章！”',
+    url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+  },
+  10: {
+    title: '十周岁 · 十全十美的美丽少年 🌷',
+    blessing: '“转眼迎来了人生第一个十年圆满！十周岁的你亭亭玉立、明朗通透。愿你的未来如繁花似锦，长风破浪，一生欢喜被爱！”',
+    url: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=800&q=80',
+  },
+};
 
-const STORAGE_KEY = 'timeflies_gallery_photos_v4';
+export function createAgePhotoItem(age: number): PhotoMilestoneItem {
+  const preset = PRESET_AGE_TEMPLATES[age];
+  if (preset) {
+    return {
+      id: `age-${age}`,
+      age,
+      title: preset.title,
+      date: `${age} 周岁纪念`,
+      url: preset.url,
+      blessing: preset.blessing,
+    };
+  }
+
+  return {
+    id: `age-${age}`,
+    age,
+    title: `${age} 周岁 · 闪耀如初的青春华章 👑`,
+    date: `${age} 周岁纪念`,
+    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
+    blessing: `“时光轻拂，记录你在第 ${age} 个春夏秋冬里的每一步成长。愿你心怀皓月，步履从容，永远充满勇气与对世界的热爱！”`,
+  };
+}
+
+const STORAGE_KEY_V5 = 'timeflies_gallery_photos_v5';
+const STORAGE_KEY_V4 = 'timeflies_gallery_photos_v4';
 
 interface PhotoGalleryProps {
   name: string;
+  currentAgeYears?: number;
   onRequireAuth?: (actionHint: string, onSuccess: () => void) => void;
 }
 
-export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
+export const PhotoGallery = ({ name, currentAgeYears = 4, onRequireAuth }: PhotoGalleryProps) => {
   const [photos, setPhotos] = useState<PhotoMilestoneItem[]>(() => {
+    let savedList: PhotoMilestoneItem[] | null = null;
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length === 4) {
-          return parsed;
+      const savedV5 = localStorage.getItem(STORAGE_KEY_V5);
+      if (savedV5) {
+        const parsed = JSON.parse(savedV5);
+        if (Array.isArray(parsed) && parsed.length > 0) savedList = parsed;
+      } else {
+        const savedV4 = localStorage.getItem(STORAGE_KEY_V4);
+        if (savedV4) {
+          const parsed = JSON.parse(savedV4);
+          if (Array.isArray(parsed) && parsed.length > 0) savedList = parsed;
         }
       }
     } catch (e) {
       console.warn('Failed to load gallery photos:', e);
     }
-    return DEFAULT_AGE_PHOTOS;
+
+    const targetMaxAge = Math.max(4, currentAgeYears || 4);
+    if (!savedList || savedList.length === 0) {
+      const initial: PhotoMilestoneItem[] = [];
+      for (let i = 1; i <= targetMaxAge; i++) {
+        initial.push(createAgePhotoItem(i));
+      }
+      return initial;
+    }
+
+    // Merge saved photos with targetMaxAge if child is older
+    const existingAges = new Set(savedList.map((p) => p.age));
+    const merged = [...savedList];
+    for (let i = 1; i <= targetMaxAge; i++) {
+      if (!existingAges.has(i)) {
+        merged.push(createAgePhotoItem(i));
+      }
+    }
+    merged.sort((a, b) => a.age - b.age);
+    return merged;
   });
 
   const [selectedPhoto, setSelectedPhoto] = useState<PhotoMilestoneItem | null>(null);
+  const [isEditingBlessing, setIsEditingBlessing] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editBlessing, setEditBlessing] = useState('');
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,7 +149,7 @@ export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
   // Sync to local storage
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
+      localStorage.setItem(STORAGE_KEY_V5, JSON.stringify(photos));
     } catch (e) {
       console.warn('Failed to save gallery photos to localStorage:', e);
     }
@@ -88,6 +158,9 @@ export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
   const handlePhotoClick = (photo: PhotoMilestoneItem) => {
     frozenAudio.playBell(1400, 0.2);
     setSelectedPhoto(photo);
+    setIsEditingBlessing(false);
+    setEditTitle(photo.title);
+    setEditBlessing(photo.blessing);
   };
 
   const handleTriggerUpload = (photoId: string, e: React.MouseEvent) => {
@@ -123,7 +196,6 @@ export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
         prev.map((p) => (p.id === photoId ? { ...p, url: dataUrl } : p))
       );
 
-      // Update currently open lightbox photo if matching
       setSelectedPhoto((prev) =>
         prev && prev.id === photoId ? { ...prev, url: dataUrl } : prev
       );
@@ -138,15 +210,15 @@ export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
   const handleResetPhoto = (photoId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const action = () => {
-      const defaultPhoto = DEFAULT_AGE_PHOTOS.find((p) => p.id === photoId);
-      if (defaultPhoto) {
-        frozenAudio.playBell(900, 0.15);
-        setPhotos((prev) =>
-          prev.map((p) => (p.id === photoId ? { ...p, url: defaultPhoto.url } : p))
-        );
-        if (selectedPhoto && selectedPhoto.id === photoId) {
-          setSelectedPhoto((prev) => (prev ? { ...prev, url: defaultPhoto.url } : prev));
-        }
+      const current = photos.find((p) => p.id === photoId);
+      if (!current) return;
+      const defaultItem = createAgePhotoItem(current.age);
+      frozenAudio.playBell(900, 0.15);
+      setPhotos((prev) =>
+        prev.map((p) => (p.id === photoId ? { ...p, url: defaultItem.url } : p))
+      );
+      if (selectedPhoto && selectedPhoto.id === photoId) {
+        setSelectedPhoto((prev) => (prev ? { ...prev, url: defaultItem.url } : prev));
       }
     };
     if (onRequireAuth) {
@@ -154,6 +226,66 @@ export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
     } else {
       action();
     }
+  };
+
+  // Add next age milestone card
+  const handleAddNextAge = () => {
+    const nextAge = (photos.length > 0 ? Math.max(...photos.map((p) => p.age)) : 0) + 1;
+    const action = () => {
+      const newItem = createAgePhotoItem(nextAge);
+      frozenAudio.playMagicSpell();
+      setPhotos((prev) => [...prev, newItem]);
+    };
+
+    if (onRequireAuth) {
+      onRequireAuth(`添加【${nextAge}周岁】成长相册`, action);
+    } else {
+      action();
+    }
+  };
+
+  // Delete age card
+  const handleDeletePhoto = (photoId: string, age: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const action = () => {
+      if (window.confirm(`确定要移除【${age}周岁】相册卡片吗？`)) {
+        frozenAudio.playBell(700, 0.15);
+        setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+        if (selectedPhoto && selectedPhoto.id === photoId) {
+          setSelectedPhoto(null);
+        }
+      }
+    };
+
+    if (onRequireAuth) {
+      onRequireAuth(`删除【${age}周岁】相册卡片`, action);
+    } else {
+      action();
+    }
+  };
+
+  // Save edited blessing/title
+  const handleSaveEdit = (photoId: string) => {
+    setPhotos((prev) =>
+      prev.map((p) =>
+        p.id === photoId
+          ? { ...p, title: editTitle.trim() || p.title, blessing: editBlessing.trim() || p.blessing }
+          : p
+      )
+    );
+    if (selectedPhoto && selectedPhoto.id === photoId) {
+      setSelectedPhoto((prev) =>
+        prev
+          ? {
+              ...prev,
+              title: editTitle.trim() || prev.title,
+              blessing: editBlessing.trim() || prev.blessing,
+            }
+          : prev
+      );
+    }
+    setIsEditingBlessing(false);
+    frozenAudio.playBell(1200, 0.2);
   };
 
   // Drag and drop support per card
@@ -183,9 +315,13 @@ export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
     }
   };
 
+  const minAge = photos.length > 0 ? Math.min(...photos.map((p) => p.age)) : 1;
+  const maxAge = photos.length > 0 ? Math.max(...photos.map((p) => p.age)) : 4;
+  const nextAgeToAdd = maxAge + 1;
+
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 my-12 relative">
-      {/* Hidden File Input for direct photo upload without cropping */}
+    <div className="w-full max-w-6xl mx-auto px-4 my-12 relative">
+      {/* Hidden File Input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -198,27 +334,25 @@ export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass-frost-card text-xs text-cyan-200 border border-cyan-400/30 mb-2">
           <Camera className="w-3.5 h-3.5 text-cyan-300" />
-          <span>Disney Frozen 1-4 Years Photo Album</span>
+          <span>Disney Frozen {minAge}-{maxAge} Years Photo Album</span>
         </div>
 
         <h2 className="text-xl sm:text-2xl font-black text-heading-elsa tracking-wide flex items-center justify-center gap-2">
           <span>👑</span>
-          <span>{name} 的 1-4 周岁成长魔法相册</span>
+          <span>{name} 的 {minAge === maxAge ? `${minAge} 周岁` : `${minAge}-${maxAge} 周岁`}成长魔法相册</span>
           <span>👑</span>
         </h2>
         <p className="text-xs sm:text-sm text-cyan-200/80 mt-1">
-          记录从初生萌芽到四周岁女王的每一步闪耀成长 · 支持直接上传本地珍藏照片
+          记录从初生萌芽到 {maxAge} 周岁的每一步闪耀成长 · 支持上传本地照片与扩展未来每一岁
         </p>
       </div>
 
-      {/* 4-Card Responsive Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* Responsive Grid with Dynamic Cards + Add Button */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         {photos.map((photo) => {
           const isDragTarget = dragOverId === photo.id;
           const isCurrentUploading = uploadingId === photo.id;
-          const isCustomPhoto = !DEFAULT_AGE_PHOTOS.some(
-            (dp) => dp.id === photo.id && dp.url === photo.url
-          );
+          const isCustomPhoto = photo.url.startsWith('data:') || photo.url.startsWith('blob:');
 
           return (
             <div
@@ -227,7 +361,7 @@ export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
               onDragOver={(e) => handleDragOver(photo.id, e)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(photo.id, e)}
-              className={`glass-frost-card p-3.5 rounded-2xl cursor-pointer group hover:scale-[1.03] transition-all duration-300 border flex flex-col justify-between relative overflow-hidden ${
+              className={`glass-frost-card p-3.5 rounded-2xl cursor-pointer group hover:scale-[1.02] transition-all duration-300 border flex flex-col justify-between relative overflow-hidden ${
                 isDragTarget
                   ? 'border-cyan-300 ring-2 ring-cyan-400 shadow-[0_0_25px_rgba(112,228,255,0.6)] bg-cyan-950/60'
                   : 'border-cyan-300/40 hover:border-cyan-300 hover:shadow-[0_0_20px_rgba(112,228,255,0.3)]'
@@ -246,6 +380,18 @@ export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
                   <div className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-slate-950/80 text-[11px] font-black text-cyan-200 border border-cyan-400/40 backdrop-blur-md shadow">
                     {photo.date}
                   </div>
+
+                  {/* Delete Button for extra added cards */}
+                  {photo.age > 4 && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeletePhoto(photo.id, photo.age, e)}
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-950/80 text-rose-300 hover:text-white hover:bg-rose-600/80 border border-rose-400/30 backdrop-blur-md transition-all shadow"
+                      title="移除此卡片"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
 
                   {/* Uploading Overlay */}
                   {isCurrentUploading && (
@@ -319,48 +465,125 @@ export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
             </div>
           );
         })}
+
+        {/* Dynamic Add Next Age Card */}
+        <div
+          onClick={handleAddNextAge}
+          className="glass-frost-card p-6 rounded-2xl cursor-pointer group hover:scale-[1.02] transition-all duration-300 border-2 border-dashed border-cyan-400/40 hover:border-cyan-300 flex flex-col items-center justify-center min-h-[260px] text-center bg-cyan-950/20 hover:bg-cyan-950/40 shadow-inner"
+        >
+          <div className="w-14 h-14 rounded-full bg-cyan-500/20 group-hover:bg-cyan-500/30 border border-cyan-300/50 flex items-center justify-center text-cyan-200 group-hover:text-white transition-all mb-3 shadow-[0_0_20px_rgba(112,228,255,0.3)] group-hover:scale-110">
+            <Plus className="w-7 h-7" />
+          </div>
+          <h3 className="text-sm font-bold text-white group-hover:text-cyan-200 transition-colors">
+            添加【{nextAgeToAdd} 周岁】相册
+          </h3>
+          <p className="text-[11px] text-cyan-300/60 mt-1.5 max-w-[180px]">
+            为宝贝的成长记录新的一岁 · 自动生成精选祝福语
+          </p>
+          <span className="mt-3 text-[10px] px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-200">
+            ✨ 点击解锁新一年
+          </span>
+        </div>
       </div>
 
       {/* Photo Lightbox & Blessing Modal */}
       {selectedPhoto && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fadeIn">
-          <div className="glass-frost-card bg-slate-950/95 p-6 sm:p-8 rounded-3xl max-w-2xl w-full border-cyan-300/60 shadow-2xl relative text-center">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedPhoto(null);
+          }}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fadeIn"
+        >
+          <div className="glass-frost-card bg-slate-950/95 p-6 sm:p-8 rounded-3xl max-w-2xl w-full border-cyan-300/60 shadow-2xl relative text-center max-h-[92vh] overflow-y-auto custom-scrollbar">
             <button
               onClick={() => setSelectedPhoto(null)}
+              aria-label="关闭"
               className="absolute top-4 right-4 p-2.5 rounded-full glass-frost-card text-cyan-300 hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
 
             {/* Lightbox Image Frame */}
-            <div className="w-full max-h-[55vh] rounded-2xl overflow-hidden border border-cyan-300/40 my-3 shadow-2xl bg-slate-950 flex items-center justify-center relative">
+            <div className="w-full max-h-[50vh] rounded-2xl overflow-hidden border border-cyan-300/40 my-3 shadow-2xl bg-slate-950 flex items-center justify-center relative">
               <img
                 src={selectedPhoto.url}
                 alt={selectedPhoto.title}
-                className="w-full h-full max-h-[55vh] object-contain"
+                className="w-full h-full max-h-[50vh] object-contain"
               />
             </div>
 
             {/* Details & Tailored Birthday Blessing */}
             <div className="space-y-3 mt-4 text-left">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <h3 className="text-lg sm:text-xl font-black text-heading-elsa">
-                  {selectedPhoto.title}
-                </h3>
+                {isEditingBlessing ? (
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-cyan-400/50 text-white text-sm focus:outline-none"
+                    placeholder="输入周岁标题..."
+                  />
+                ) : (
+                  <h3 className="text-lg sm:text-xl font-black text-heading-elsa">
+                    {selectedPhoto.title}
+                  </h3>
+                )}
                 <span className="text-xs px-3 py-1 rounded-full glass-frost-card text-cyan-300 font-bold border border-cyan-400/40 self-start sm:self-auto">
                   {selectedPhoto.date}
                 </span>
               </div>
 
-              {/* Warm Blessing Box */}
-              <div className="bg-slate-950/70 p-4 rounded-2xl border border-cyan-400/30 shadow-inner">
-                <div className="flex items-center gap-1.5 text-xs text-amber-300 font-bold mb-1.5">
-                  <Heart className="w-3.5 h-3.5 fill-amber-300" />
-                  <span>{selectedPhoto.age} 周岁专属成长祝福语</span>
+              {/* Warm Blessing Box with Inline Editing Support */}
+              <div className="bg-slate-950/70 p-4 rounded-2xl border border-cyan-400/30 shadow-inner relative">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5 text-xs text-amber-300 font-bold">
+                    <Heart className="w-3.5 h-3.5 fill-amber-300" />
+                    <span>{selectedPhoto.age} 周岁专属成长祝福语</span>
+                  </div>
+
+                  {!isEditingBlessing ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingBlessing(true)}
+                      className="text-[11px] text-cyan-300 hover:text-white flex items-center gap-1 bg-cyan-950/80 px-2 py-0.5 rounded-md border border-cyan-500/30"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      <span>编辑寄语</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleSaveEdit(selectedPhoto.id)}
+                        className="text-[11px] text-emerald-300 hover:text-emerald-100 flex items-center gap-1 bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-500/30"
+                      >
+                        <Check className="w-3 h-3" />
+                        <span>保存</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingBlessing(false)}
+                        className="text-[11px] text-slate-400 hover:text-slate-200 px-1.5 py-0.5"
+                      >
+                        取消
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs sm:text-sm text-cyan-100 font-light leading-relaxed italic">
-                  {selectedPhoto.blessing}
-                </p>
+
+                {isEditingBlessing ? (
+                  <textarea
+                    value={editBlessing}
+                    onChange={(e) => setEditBlessing(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-cyan-400/50 text-cyan-100 text-xs sm:text-sm focus:outline-none"
+                    placeholder="输入给宝贝本周岁的专属寄语..."
+                  />
+                ) : (
+                  <p className="text-xs sm:text-sm text-cyan-100 font-light leading-relaxed italic">
+                    {selectedPhoto.blessing}
+                  </p>
+                )}
               </div>
             </div>
 

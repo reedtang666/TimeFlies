@@ -234,7 +234,11 @@ export function App() {
         />
 
         {/* Photo Gallery Timeline */}
-        <PhotoGallery name={name} onRequireAuth={runWithAuth} />
+        <PhotoGallery
+          name={name}
+          currentAgeYears={growthTime.years}
+          onRequireAuth={runWithAuth}
+        />
 
         {/* Time Capsule Letters from Dad & Mom */}
         <TimeCapsule currentAgeYears={growthTime.years} name={name} />
