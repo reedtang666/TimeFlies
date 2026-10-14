@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, Sparkles, Image, Calendar, User, Quote, Palette, Music } from 'lucide-react';
+import { X, Copy, Check, Sparkles, Image, Calendar, User, Quote, Palette, Music, ShieldCheck, LogOut } from 'lucide-react';
 import { PRESET_AVATARS, DEFAULT_QUOTES } from '../data/elsaPresetData';
 import { frozenAudio } from '../utils/audioSystem';
 import { loadImageSource } from '../utils/imageHelper';
+import { authSystem } from '../utils/authSystem';
 import { AvatarCropModal } from './AvatarCropModal';
 
 interface SettingsModalProps {
@@ -66,25 +67,44 @@ export const SettingsModal = ({
     setTimeout(() => setCopied(false), 2500);
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md overflow-y-auto">
-      <div className="glass-frost-card bg-slate-950/95 p-6 sm:p-8 rounded-3xl max-w-lg w-full border-cyan-300/40 shadow-2xl relative my-8">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full glass-frost-card text-cyan-300 hover:text-white"
-        >
-          <X className="w-5 h-5" />
-        </button>
+  // Close modal on Escape key press
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
-        <div className="flex items-center gap-2 mb-6">
-          <Sparkles className="w-5 h-5 text-cyan-300" />
-          <h2 className="text-xl font-bold font-heading text-white">
-            定制冰雪魔盒信息
-          </h2>
+  return (
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn"
+    >
+      <div className="glass-frost-card bg-slate-950/95 rounded-3xl max-w-lg w-full border-cyan-300/40 shadow-2xl relative my-auto max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden">
+        {/* Sticky Header with Persistent Close Button for Mobile & PC */}
+        <div className="flex items-center justify-between px-5 sm:px-7 py-4 border-b border-cyan-500/20 bg-slate-950/90 backdrop-blur-md flex-shrink-0 z-10">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-cyan-300" />
+            <h2 className="text-lg sm:text-xl font-bold font-heading text-white">
+              定制冰雪魔盒信息
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="关闭设置"
+            className="p-2 -mr-1 rounded-full glass-frost-card text-cyan-300 hover:text-white hover:border-cyan-300 transition-colors flex items-center justify-center"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Name */}
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-5 space-y-5 custom-scrollbar">
+            {/* Name */}
           <div>
             <label className="block text-xs font-semibold text-cyan-200 mb-1.5 flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-cyan-300" />
@@ -308,20 +328,55 @@ export const SettingsModal = ({
             </p>
           </div>
 
-          {/* Action buttons */}
-          <div className="pt-4 flex flex-col sm:flex-row gap-3">
+          {/* Admin Security & Password Management */}
+          <div className="pt-3 border-t border-cyan-500/20">
+            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-cyan-400/30 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-200">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>管理员权限 · 已解锁 (7天免密中)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    authSystem.logout();
+                    onClose();
+                  }}
+                  className="text-[11px] text-rose-300 hover:text-rose-100 flex items-center gap-1 bg-rose-500/20 px-2.5 py-1 rounded-lg border border-rose-400/30 transition-colors"
+                >
+                  <LogOut className="w-3 h-3" />
+                  退出管理 (锁定)
+                </button>
+              </div>
+              <div className="text-[10px] text-cyan-300/50">
+                🔒 全站密码已由部署环境变量 (VITE_ADMIN_PASSWORD) 守护，访客无法修改配置。
+              </div>
+            </div>
+          </div>
+          </div>
+
+          {/* Sticky Bottom Action Buttons for Mobile & PC */}
+          <div className="px-5 sm:px-7 py-3.5 border-t border-cyan-500/20 bg-slate-950/90 backdrop-blur-md flex-shrink-0 flex flex-col sm:flex-row gap-2.5">
+            <button
+              type="button"
+              onClick={onClose}
+              className="glass-frost-btn justify-center text-xs py-2.5 px-4 text-slate-300 hover:text-white border-slate-700 hover:border-slate-500 hover:bg-slate-800/60 transition-colors order-last sm:order-first"
+            >
+              取消
+            </button>
+
             <button
               type="button"
               onClick={handleGenerateShareUrl}
-              className="glass-frost-btn justify-center text-xs py-2.5 flex-1 border-cyan-400/40"
+              className="glass-frost-btn justify-center text-xs py-2.5 flex-1 border-cyan-400/40 text-cyan-200 hover:text-white"
             >
               {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-              <span>{copied ? '专属 URL 已复制！' : '复制零代码专属 URL 🔗'}</span>
+              <span>{copied ? '专属 URL 已复制！' : '复制专属 URL 🔗'}</span>
             </button>
 
             <button
               type="submit"
-              className="glass-frost-btn justify-center text-xs py-2.5 flex-1 bg-cyan-500/30 hover:bg-cyan-500/50 border-cyan-300 text-white font-bold"
+              className="glass-frost-btn justify-center text-xs py-2.5 flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 border-cyan-300 text-white font-bold shadow-lg shadow-cyan-500/25"
             >
               保存魔法配置 ✨
             </button>

@@ -51,9 +51,10 @@ const STORAGE_KEY = 'timeflies_gallery_photos_v4';
 
 interface PhotoGalleryProps {
   name: string;
+  onRequireAuth?: (actionHint: string, onSuccess: () => void) => void;
 }
 
-export const PhotoGallery = ({ name }: PhotoGalleryProps) => {
+export const PhotoGallery = ({ name, onRequireAuth }: PhotoGalleryProps) => {
   const [photos, setPhotos] = useState<PhotoMilestoneItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -91,8 +92,15 @@ export const PhotoGallery = ({ name }: PhotoGalleryProps) => {
 
   const handleTriggerUpload = (photoId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    targetUploadIdRef.current = photoId;
-    fileInputRef.current?.click();
+    const action = () => {
+      targetUploadIdRef.current = photoId;
+      fileInputRef.current?.click();
+    };
+    if (onRequireAuth) {
+      onRequireAuth('上传或替换相册照片', action);
+    } else {
+      action();
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,15 +137,22 @@ export const PhotoGallery = ({ name }: PhotoGalleryProps) => {
 
   const handleResetPhoto = (photoId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const defaultPhoto = DEFAULT_AGE_PHOTOS.find((p) => p.id === photoId);
-    if (defaultPhoto) {
-      frozenAudio.playBell(900, 0.15);
-      setPhotos((prev) =>
-        prev.map((p) => (p.id === photoId ? { ...p, url: defaultPhoto.url } : p))
-      );
-      if (selectedPhoto && selectedPhoto.id === photoId) {
-        setSelectedPhoto((prev) => (prev ? { ...prev, url: defaultPhoto.url } : prev));
+    const action = () => {
+      const defaultPhoto = DEFAULT_AGE_PHOTOS.find((p) => p.id === photoId);
+      if (defaultPhoto) {
+        frozenAudio.playBell(900, 0.15);
+        setPhotos((prev) =>
+          prev.map((p) => (p.id === photoId ? { ...p, url: defaultPhoto.url } : p))
+        );
+        if (selectedPhoto && selectedPhoto.id === photoId) {
+          setSelectedPhoto((prev) => (prev ? { ...prev, url: defaultPhoto.url } : prev));
+        }
       }
+    };
+    if (onRequireAuth) {
+      onRequireAuth('恢复相册默认照片', action);
+    } else {
+      action();
     }
   };
 
@@ -160,7 +175,11 @@ export const PhotoGallery = ({ name }: PhotoGalleryProps) => {
     setDragOverId(null);
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      processAndSetPhoto(photoId, file);
+      if (onRequireAuth) {
+        onRequireAuth('上传或替换相册照片', () => processAndSetPhoto(photoId, file));
+      } else {
+        processAndSetPhoto(photoId, file);
+      }
     }
   };
 

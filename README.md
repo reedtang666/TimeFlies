@@ -95,7 +95,18 @@ npm install
 # 或 yarn / pnpm install
 ```
 
-### 3. 本地开发
+### 3. 配置管理员密码（可选）
+复制环境变量模板：
+```bash
+cp .env.example .env
+```
+在 `.env` 中修改为你自己的专属管理密码：
+```env
+VITE_ADMIN_PASSWORD=your_secure_password
+```
+> 💡 **部署提示**：若部署到 **Vercel**、**Cloudflare Pages** 或 **Netlify**，只需在项目后台的 **Environment Variables（环境变量）** 中添加 `VITE_ADMIN_PASSWORD` 即可。全站将自动受此密码保护，访客无法修改配置或相册。
+
+### 4. 本地开发
 ```bash
 npm run dev
 ```

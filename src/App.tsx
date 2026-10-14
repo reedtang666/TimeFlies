@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { ElsaHeader } from './components/ElsaHeader';
 import { TimerDisplay } from './components/TimerDisplay';
@@ -15,11 +15,13 @@ import { IceMagicOverlay } from './components/IceMagicOverlay';
 import { ElsaCastleGraphic } from './components/ElsaCastleGraphic';
 import { AvatarCropModal } from './components/AvatarCropModal';
 import { FloatingMusicBar } from './components/FloatingMusicBar';
+import { AdminAuthModal } from './components/AdminAuthModal';
 import { calculateGrowthTime, type GrowthTime } from './utils/timeCalculator';
 import { DEFAULT_MILESTONES, PRESET_AVATARS } from './data/elsaPresetData';
 import { triggerFrozenMagicEffect } from './utils/magicEffects';
 import { loadImageSource } from './utils/imageHelper';
 import { frozenAudio } from './utils/audioSystem';
+import { authSystem } from './utils/authSystem';
 
 export function App() {
   const getInitialParams = () => {
@@ -62,10 +64,35 @@ export function App() {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isMagicActive, setIsMagicActive] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 2800);
+  }, []);
+
+  const handleMagicComplete = useCallback(() => {
+    setIsMagicActive(false);
+  }, []);
 
   // Avatar Cropper state
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+
+  // Admin Auth state
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [pendingAuthAction, setPendingAuthAction] = useState<(() => void) | null>(null);
+  const [authActionHint, setAuthActionHint] = useState<string>('');
+
+  const runWithAuth = (hint: string, action: () => void) => {
+    if (authSystem.isAuthenticated()) {
+      action();
+    } else {
+      setAuthActionHint(hint);
+      setPendingAuthAction(() => action);
+      setIsAuthModalOpen(true);
+    }
+  };
 
   // Subscribe to global audio state
   useEffect(() => {
@@ -112,6 +139,7 @@ export function App() {
 
     setIsMagicActive(true);
     triggerFrozenMagicEffect();
+    showToast('✨ 冰雪魔法配置已成功保存！');
   };
 
   const handleUpdateAvatar = (newAvatarUrl: string) => {
@@ -119,6 +147,7 @@ export function App() {
     localStorage.setItem('timeflies_avatar', newAvatarUrl);
     setIsMagicActive(true);
     triggerFrozenMagicEffect();
+    showToast('👑 专属头像已更新！');
   };
 
   const handleRequestCrop = async (file: File) => {
@@ -146,10 +175,17 @@ export function App() {
       {/* 60fps Canvas Aurora & Snow Particle System */}
       <BackgroundCanvas />
 
+      {/* Floating Save/Status Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[150] px-5 py-2.5 rounded-full bg-slate-900/95 border border-cyan-300 shadow-[0_0_25px_rgba(34,211,238,0.5)] text-cyan-200 text-xs sm:text-sm font-semibold flex items-center gap-2 backdrop-blur-md animate-bounce pointer-events-none">
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Full-Screen Ice Magic Blast Overlay */}
       <IceMagicOverlay
         isActive={isMagicActive}
-        onComplete={() => setIsMagicActive(false)}
+        onComplete={handleMagicComplete}
       />
 
       {/* Main Container */}
@@ -162,11 +198,11 @@ export function App() {
           theme={theme}
           isMuted={!isAudioPlaying}
           onToggleAudio={() => (isAudioPlaying ? frozenAudio.pause() : frozenAudio.play())}
-          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenSettings={() => runWithAuth('修改站点配置', () => setIsSettingsOpen(true))}
           onCastMagic={handleCastMagic}
           onOpenShare={() => setIsShareOpen(true)}
-          onUpdateAvatar={handleUpdateAvatar}
-          onRequestCrop={handleRequestCrop}
+          onUpdateAvatar={(newAvatar) => runWithAuth('更换专属头像', () => handleUpdateAvatar(newAvatar))}
+          onRequestCrop={(file) => runWithAuth('更换专属头像', () => handleRequestCrop(file))}
         />
 
         {/* Hero Counter */}
@@ -177,8 +213,8 @@ export function App() {
           name={name}
           dob={dob}
           avatarUrl={avatarUrl}
-          onUpdateAvatar={handleUpdateAvatar}
-          onRequestCrop={handleRequestCrop}
+          onUpdateAvatar={(newAvatar) => runWithAuth('更换专属头像', () => handleUpdateAvatar(newAvatar))}
+          onRequestCrop={(file) => runWithAuth('更换专属头像', () => handleRequestCrop(file))}
         />
 
         {/* Elsa's Magical Ice Chime / Piano */}
@@ -198,7 +234,7 @@ export function App() {
         />
 
         {/* Photo Gallery Timeline */}
-        <PhotoGallery name={name} />
+        <PhotoGallery name={name} onRequireAuth={runWithAuth} />
 
         {/* Time Capsule Letters from Dad & Mom */}
         <TimeCapsule currentAgeYears={growthTime.years} name={name} />
@@ -209,6 +245,22 @@ export function App() {
 
       {/* Persistent Floating Music Controller with Draggable Seek Bar */}
       <FloatingMusicBar />
+
+      {/* Admin Auth Modal */}
+      <AdminAuthModal
+        isOpen={isAuthModalOpen}
+        actionHint={authActionHint}
+        onClose={() => {
+          setIsAuthModalOpen(false);
+          setPendingAuthAction(null);
+        }}
+        onSuccess={() => {
+          if (pendingAuthAction) {
+            pendingAuthAction();
+            setPendingAuthAction(null);
+          }
+        }}
+      />
 
       {/* Settings Modal */}
       <SettingsModal
