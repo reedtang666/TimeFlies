@@ -22,6 +22,7 @@ import { triggerFrozenMagicEffect } from './utils/magicEffects';
 import { loadImageSource } from './utils/imageHelper';
 import { frozenAudio } from './utils/audioSystem';
 import { authSystem } from './utils/authSystem';
+import { cloudSync } from './utils/cloudSync';
 
 export function App() {
   const getInitialParams = () => {
@@ -116,6 +117,56 @@ export function App() {
 
     return () => clearInterval(timer);
   }, [dob]);
+
+  // Auto-load cloud capsule if ?id=xxx is in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const capsuleId = urlParams.get('id') || urlParams.get('capsule');
+    if (!capsuleId) return;
+
+    const loadCloudCapsule = async () => {
+      try {
+        const cloudData = await cloudSync.loadFromCloud(capsuleId);
+        if (cloudData) {
+          if (cloudData.name) {
+            setName(cloudData.name);
+            localStorage.setItem('timeflies_name', cloudData.name);
+          }
+          if (cloudData.dob) {
+            setDob(cloudData.dob);
+            localStorage.setItem('timeflies_dob', cloudData.dob);
+            setGrowthTime(calculateGrowthTime(cloudData.dob));
+          }
+          if (cloudData.quote) {
+            setQuote(cloudData.quote);
+            localStorage.setItem('timeflies_quote', cloudData.quote);
+          }
+          if (cloudData.avatarUrl) {
+            setAvatarUrl(cloudData.avatarUrl);
+            localStorage.setItem('timeflies_avatar', cloudData.avatarUrl);
+          }
+          if (cloudData.theme) {
+            setTheme(cloudData.theme);
+            localStorage.setItem('timeflies_theme', cloudData.theme);
+          }
+          if (cloudData.photos && Array.isArray(cloudData.photos)) {
+            localStorage.setItem('timeflies_gallery_photos_v5', JSON.stringify(cloudData.photos));
+            window.dispatchEvent(new Event('timeflies_storage_updated'));
+          }
+          if (cloudData.letters && Array.isArray(cloudData.letters)) {
+            localStorage.setItem('timeflies_time_capsule_letters_v2', JSON.stringify(cloudData.letters));
+            window.dispatchEvent(new Event('timeflies_storage_updated'));
+          }
+
+          showToast(`✨ 成功载入【${cloudData.name}】的云端专属档案！`);
+        }
+      } catch (e) {
+        console.warn('Failed to load cloud capsule:', e);
+      }
+    };
+
+    loadCloudCapsule();
+  }, [showToast]);
 
   // Save Settings
   const handleSaveSettings = (data: {

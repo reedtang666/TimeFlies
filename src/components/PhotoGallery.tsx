@@ -155,6 +155,24 @@ export const PhotoGallery = ({ name, currentAgeYears = 4, onRequireAuth }: Photo
     }
   }, [photos]);
 
+  // Listen for storage updates (e.g. from cloud sync load)
+  useEffect(() => {
+    const handleStorageUpdate = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_V5);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setPhotos(parsed);
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener('timeflies_storage_updated', handleStorageUpdate);
+    return () => window.removeEventListener('timeflies_storage_updated', handleStorageUpdate);
+  }, []);
+
   const handlePhotoClick = (photo: PhotoMilestoneItem) => {
     frozenAudio.playBell(1400, 0.2);
     setSelectedPhoto(photo);

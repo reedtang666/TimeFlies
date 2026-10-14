@@ -4,6 +4,7 @@ import { PRESET_AVATARS, DEFAULT_QUOTES } from '../data/elsaPresetData';
 import { frozenAudio } from '../utils/audioSystem';
 import { loadImageSource } from '../utils/imageHelper';
 import { authSystem } from '../utils/authSystem';
+import { cloudSync } from '../utils/cloudSync';
 import { AvatarCropModal } from './AvatarCropModal';
 
 interface SettingsModalProps {
@@ -44,6 +45,7 @@ export const SettingsModal = ({
     return localStorage.getItem('timeflies_audio_url') || '';
   });
   const [copied, setCopied] = useState(false);
+  const [isCloudSyncing, setIsCloudSyncing] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
 
@@ -51,18 +53,73 @@ export const SettingsModal = ({
     e.preventDefault();
     frozenAudio.setAudioUrl(audioUrlInput.trim() || null);
     onSave({ name, dob, quote, avatarUrl, theme });
+
+    // Background cloud sync if KV is available
+    let savedPhotos: any[] = [];
+    let savedLetters: any[] = [];
+    try {
+      const pStr = localStorage.getItem('timeflies_gallery_photos_v5');
+      if (pStr) savedPhotos = JSON.parse(pStr);
+      const lStr = localStorage.getItem('timeflies_time_capsule_letters_v2');
+      if (lStr) savedLetters = JSON.parse(lStr);
+    } catch {}
+
+    const existingId = localStorage.getItem('timeflies_cloud_capsule_id') || undefined;
+    cloudSync.saveToCloud({
+      name,
+      dob,
+      quote,
+      avatarUrl,
+      theme,
+      photos: savedPhotos,
+      letters: savedLetters,
+    }, existingId).catch(() => {});
+
     onClose();
   };
 
-  const handleGenerateShareUrl = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('name', name);
-    url.searchParams.set('dob', dob);
-    url.searchParams.set('quote', quote);
-    url.searchParams.set('theme', theme);
-    if (avatarUrl) url.searchParams.set('avatar', avatarUrl);
+  const handleGenerateShareUrl = async () => {
+    setIsCloudSyncing(true);
+    let shareUrl = '';
 
-    navigator.clipboard.writeText(url.toString());
+    try {
+      let savedPhotos: any[] = [];
+      let savedLetters: any[] = [];
+      try {
+        const pStr = localStorage.getItem('timeflies_gallery_photos_v5');
+        if (pStr) savedPhotos = JSON.parse(pStr);
+        const lStr = localStorage.getItem('timeflies_time_capsule_letters_v2');
+        if (lStr) savedLetters = JSON.parse(lStr);
+      } catch {}
+
+      const existingId = localStorage.getItem('timeflies_cloud_capsule_id') || undefined;
+      const result = await cloudSync.saveToCloud({
+        name,
+        dob,
+        quote,
+        avatarUrl,
+        theme,
+        photos: savedPhotos,
+        letters: savedLetters,
+      }, existingId);
+
+      shareUrl = result.url;
+    } catch {
+      // Fallback to URL parameters if offline or KV not configured
+      const url = new URL(window.location.href);
+      url.searchParams.set('name', name);
+      url.searchParams.set('dob', dob);
+      url.searchParams.set('quote', quote);
+      url.searchParams.set('theme', theme);
+      if (avatarUrl && !avatarUrl.startsWith('data:')) {
+        url.searchParams.set('avatar', avatarUrl);
+      }
+      shareUrl = url.toString();
+    } finally {
+      setIsCloudSyncing(false);
+    }
+
+    navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -367,11 +424,24 @@ export const SettingsModal = ({
 
             <button
               type="button"
+              disabled={isCloudSyncing}
               onClick={handleGenerateShareUrl}
-              className="glass-frost-btn justify-center text-xs py-2.5 flex-1 border-cyan-400/40 text-cyan-200 hover:text-white"
+              className="glass-frost-btn justify-center text-xs py-2.5 flex-1 border-cyan-400/40 text-cyan-200 hover:text-white disabled:opacity-50"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-              <span>{copied ? '专属 URL 已复制！' : '复制专属 URL 🔗'}</span>
+              {copied ? (
+                <Check className="w-4 h-4 text-emerald-400" />
+              ) : isCloudSyncing ? (
+                <Sparkles className="w-4 h-4 animate-spin text-cyan-300" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+              <span>
+                {copied
+                  ? '专属云端 URL 已复制！'
+                  : isCloudSyncing
+                  ? '正在同步云端档案...'
+                  : '复制专属云端 URL 🔗'}
+              </span>
             </button>
 
             <button

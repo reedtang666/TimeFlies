@@ -80,6 +80,24 @@ export const TimeCapsule: React.FC<TimeCapsuleProps> = ({ currentAgeYears, name,
     }
   }, [letters]);
 
+  // Listen for storage updates (e.g. from cloud sync load)
+  useEffect(() => {
+    const handleStorageUpdate = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setLetters(parsed);
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener('timeflies_storage_updated', handleStorageUpdate);
+    return () => window.removeEventListener('timeflies_storage_updated', handleStorageUpdate);
+  }, []);
+
   // Check if current visitor has admin rights
   const isAdmin = authSystem.isAuthenticated();
 
