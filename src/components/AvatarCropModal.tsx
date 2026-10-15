@@ -208,7 +208,7 @@ export const AvatarCropModal: React.FC<AvatarCropModalProps> = ({
       ctx.drawImage(img, -w / 2, -h / 2, w, h);
       ctx.restore();
 
-      const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      const croppedDataUrl = canvas.toDataURL('image/png');
       frozenAudio.playMagicSpell();
       onConfirmCrop(croppedDataUrl);
       onClose();

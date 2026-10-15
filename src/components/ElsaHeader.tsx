@@ -149,10 +149,12 @@ function ElsaHeaderComponent({
               frozenAudio.playBell(1200, 0.2);
               onOpenShare();
             }}
-            className="p-3 rounded-full glass-frost-card text-cyan-200 hover:text-white transition-all"
-            title="生成冰雪海报"
+            className="glass-frost-btn text-xs py-2 px-3 sm:px-3.5 flex items-center gap-1.5 border-cyan-300/60 text-cyan-200 hover:text-white transition-all shadow-[0_0_15px_rgba(112,228,255,0.2)] hover:shadow-[0_0_20px_rgba(112,228,255,0.4)]"
+            title="制作魔法拍立得与成长海报"
           >
-            <Share2 className="w-4 h-4" />
+            <Camera className="w-3.5 h-3.5 text-cyan-300" />
+            <span className="hidden sm:inline font-bold">制作拍立得 / 海报 📸</span>
+            <span className="sm:hidden font-bold">拍立得</span>
           </button>
 
           <button

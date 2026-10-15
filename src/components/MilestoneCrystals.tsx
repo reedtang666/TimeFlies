@@ -1,17 +1,20 @@
 import { useState } from 'react';
-import { Sparkles, CheckCircle2, Lock, X } from 'lucide-react';
+import { Sparkles, CheckCircle2, Lock, X, Camera } from 'lucide-react';
 import type { Milestone } from '../data/elsaPresetData';
+import { frozenAudio } from '../utils/audioSystem';
 
 interface MilestoneCrystalsProps {
   milestones: Milestone[];
   totalDays: number;
   name: string;
+  onOpenShare?: () => void;
 }
 
 export const MilestoneCrystals = ({
   milestones,
   totalDays,
   name,
+  onOpenShare,
 }: MilestoneCrystalsProps) => {
   const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
 
@@ -37,16 +40,21 @@ export const MilestoneCrystals = ({
           return (
             <div
               key={m.id}
-              onClick={() => setSelectedMilestone({ ...m, isUnlocked })}
-              className={`glass-frost-card p-5 rounded-2xl cursor-pointer text-center flex flex-col items-center justify-between border transition-all ${
+              onClick={() => {
+                frozenAudio.playBell(isUnlocked ? 1100 : 700, 0.15);
+                setSelectedMilestone({ ...m, isUnlocked });
+              }}
+              className={`glass-frost-card p-5 rounded-2xl cursor-pointer text-center flex flex-col items-center justify-between border transition-all duration-300 group hover:-translate-y-1.5 ${
                 isUnlocked
-                  ? 'border-cyan-300/60 bg-cyan-950/40 shadow-[0_0_20px_rgba(112,228,255,0.25)]'
-                  : 'border-slate-700/60 opacity-80 hover:opacity-100'
+                  ? 'border-cyan-300/60 bg-cyan-950/40 shadow-[0_0_20px_rgba(112,228,255,0.25)] hover:border-cyan-300 hover:shadow-[0_0_30px_rgba(112,228,255,0.45)]'
+                  : 'border-slate-700/60 opacity-80 hover:opacity-100 hover:border-slate-500'
               }`}
             >
-              <div className="text-4xl mb-2 animate-crown">{m.icon}</div>
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform duration-300 animate-crown">
+                {m.icon}
+              </div>
 
-              <h3 className="text-xs sm:text-sm font-bold text-white mb-1 line-clamp-1">
+              <h3 className="text-xs sm:text-sm font-bold text-white mb-1 line-clamp-1 group-hover:text-cyan-200 transition-colors">
                 {m.title}
               </h3>
 
@@ -54,7 +62,7 @@ export const MilestoneCrystals = ({
                 {m.days === 0 ? '出生第一天' : `第 ${m.days} 天`}
               </p>
 
-              <div className="w-full pt-2.5 border-t border-cyan-400/20 flex items-center justify-center">
+              <div className="w-full pt-2.5 border-t border-cyan-400/20 flex flex-col items-center justify-center gap-1">
                 {isUnlocked ? (
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400">
                     <CheckCircle2 className="w-3.5 h-3.5" />
@@ -66,6 +74,9 @@ export const MilestoneCrystals = ({
                     还剩 {daysRemaining} 天
                   </span>
                 )}
+                <span className="text-[9px] text-cyan-300/50 group-hover:text-cyan-200 transition-colors">
+                  点击查看回忆 ❄️
+                </span>
               </div>
             </div>
           );
@@ -98,12 +109,27 @@ export const MilestoneCrystals = ({
               {selectedMilestone.description}
             </p>
 
-            <button
-              onClick={() => setSelectedMilestone(null)}
-              className="glass-frost-btn w-full justify-center text-sm py-3 mt-2"
-            >
-              收入冰雪回忆盒 ❄️
-            </button>
+            <div className="flex flex-col gap-2">
+              {onOpenShare && (
+                <button
+                  onClick={() => {
+                    setSelectedMilestone(null);
+                    onOpenShare();
+                  }}
+                  className="glass-frost-btn w-full justify-center text-xs py-2.5 bg-cyan-500/20 border-cyan-300 text-cyan-200 hover:text-white flex items-center gap-1.5"
+                >
+                  <Camera className="w-4 h-4 text-cyan-300" />
+                  <span>制作专属纪念拍立得 / 海报 📸</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => setSelectedMilestone(null)}
+                className="glass-frost-btn w-full justify-center text-xs py-2.5"
+              >
+                收入冰雪回忆盒 ❄️
+              </button>
+            </div>
           </div>
         </div>
       )}

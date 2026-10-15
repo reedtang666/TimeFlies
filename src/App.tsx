@@ -266,6 +266,7 @@ export function App() {
           avatarUrl={avatarUrl}
           onUpdateAvatar={(newAvatar) => runWithAuth('更换专属头像', () => handleUpdateAvatar(newAvatar))}
           onRequestCrop={(file) => runWithAuth('更换专属头像', () => handleRequestCrop(file))}
+          onExportPoster={() => setIsShareOpen(true)}
         />
 
         {/* Elsa's Magical Ice Chime / Piano */}
@@ -282,6 +283,7 @@ export function App() {
           milestones={DEFAULT_MILESTONES}
           totalDays={growthTime.totalDays}
           name={name}
+          onOpenShare={() => setIsShareOpen(true)}
         />
 
         {/* Photo Gallery Timeline */}

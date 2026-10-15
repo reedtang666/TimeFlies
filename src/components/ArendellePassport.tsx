@@ -10,6 +10,7 @@ interface ArendellePassportProps {
   avatarUrl: string;
   onUpdateAvatar?: (newAvatarUrl: string) => void;
   onRequestCrop?: (file: File) => void;
+  onExportPoster?: () => void;
 }
 
 export const ArendellePassport = ({
@@ -18,6 +19,7 @@ export const ArendellePassport = ({
   avatarUrl,
   onUpdateAvatar,
   onRequestCrop,
+  onExportPoster,
 }: ArendellePassportProps) => {
   const [isStamped, setIsStamped] = useState(false);
   const passportFileInputRef = useRef<HTMLInputElement>(null);
@@ -83,15 +85,31 @@ export const ArendellePassport = ({
             </div>
           </div>
 
-          <button
-            onClick={handleStampPassport}
-            className={`glass-frost-btn text-xs py-2 px-4 flex items-center gap-1.5 ${
-              isStamped ? 'border-emerald-400 text-emerald-300' : 'border-amber-400 text-amber-300'
-            }`}
-          >
-            <Award className="w-4 h-4 text-amber-300" />
-            <span>{isStamped ? '已加盖艾莎女王皇家魔法金印 ✨' : '点击盖上艾莎女王皇家金印 👑'}</span>
-          </button>
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            {onExportPoster && (
+              <button
+                onClick={() => {
+                  frozenAudio.playBell(1100, 0.15);
+                  onExportPoster();
+                }}
+                className="glass-frost-btn text-xs py-2 px-3 flex items-center gap-1.5 border-cyan-400 text-cyan-200 hover:text-white"
+                title="一键制作导出官方证书或拍立得"
+              >
+                <Camera className="w-4 h-4 text-cyan-300" />
+                <span>导出认证卡片 / 拍立得 📸</span>
+              </button>
+            )}
+
+            <button
+              onClick={handleStampPassport}
+              className={`glass-frost-btn text-xs py-2 px-4 flex items-center gap-1.5 ${
+                isStamped ? 'border-emerald-400 text-emerald-300' : 'border-amber-400 text-amber-300'
+              }`}
+            >
+              <Award className="w-4 h-4 text-amber-300" />
+              <span>{isStamped ? '已加盖艾莎女王皇家魔法金印 ✨' : '点击盖上艾莎女王皇家金印 👑'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Passport Body Grid */}
