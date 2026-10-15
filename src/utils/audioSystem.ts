@@ -144,6 +144,11 @@ class FrozenAudioEngine {
     }
   }
 
+  // Play sparkling chime sound
+  public playSparkle() {
+    this.playMagicSpell();
+  }
+
   // Play magical ice arpeggio spell
   public playMagicSpell() {
     try {

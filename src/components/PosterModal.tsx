@@ -90,8 +90,6 @@ export const PosterModal = ({
   avatarUrl,
   growthTime,
 }: PosterModalProps) => {
-  if (!isOpen) return null;
-
   const posterRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -237,6 +235,8 @@ export const PosterModal = ({
     const d = new Date();
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   }, []);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xl overflow-y-auto animate-fadeIn select-none">

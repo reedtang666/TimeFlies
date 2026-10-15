@@ -8,6 +8,8 @@ export interface Milestone {
   isUnlocked?: boolean;
 }
 
+export const GITHUB_REPO_URL = 'https://github.com/reedtang666/TimeFlies';
+
 export interface PresetAvatar {
   id: string;
   name: string;

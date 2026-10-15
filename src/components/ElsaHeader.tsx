@@ -1,7 +1,9 @@
 import { memo, useRef, useState } from 'react';
-import { Sparkles, Settings, Share2, Volume2, VolumeX, Wand2, Camera, UploadCloud } from 'lucide-react';
+import { Sparkles, Settings, Volume2, VolumeX, Wand2, Camera, UploadCloud } from 'lucide-react';
 import { frozenAudio } from '../utils/audioSystem';
 import { processAvatarImage } from '../utils/imageHelper';
+import { GithubIcon } from './GithubIcon';
+import { GITHUB_REPO_URL } from '../data/elsaPresetData';
 
 interface ElsaHeaderProps {
   name: string;
@@ -116,30 +118,43 @@ function ElsaHeaderComponent({
       />
 
       {/* Top Floating Controls Bar */}
-      <div className="w-full flex items-center justify-between mb-8">
+      <div className="w-full flex flex-wrap items-center justify-between gap-2.5 mb-8">
         <button
           onClick={handleMagicClick}
-          className="glass-frost-btn text-xs sm:text-sm"
+          className="glass-frost-btn text-xs sm:text-sm py-2 px-3 sm:px-4"
         >
           <Wand2 className="w-4 h-4 text-cyan-300 animate-pulse" />
-          <span>释放冰雪魔法 ❄️</span>
+          <span><span className="hidden xs:inline">释放</span>冰雪魔法 ❄️</span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
+          <a
+            href={GITHUB_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => frozenAudio.playBell(1400, 0.2)}
+            className="glass-frost-btn text-xs py-2 px-2.5 sm:px-3.5 flex items-center gap-1.5 border-cyan-400/50 hover:border-cyan-300 text-cyan-200 hover:text-white bg-cyan-950/40 hover:bg-cyan-900/60 transition-all shadow-[0_0_15px_rgba(56,189,248,0.2)] hover:shadow-[0_0_20px_rgba(56,189,248,0.45)] group"
+            title="想要自己制作一份吗？前往 GitHub 关注仓库"
+          >
+            <GithubIcon className="w-3.5 h-3.5 text-cyan-300 group-hover:rotate-12 transition-transform" />
+            <span className="font-bold">制作同款</span>
+            <Sparkles className="w-3 h-3 text-amber-300 animate-pulse hidden sm:inline" />
+          </a>
+
           <button
             onClick={handleAudioClick}
-            className="p-3 rounded-full glass-frost-card text-cyan-200 hover:text-white transition-all flex items-center gap-1.5 px-4"
+            className="p-2.5 sm:p-3 rounded-full glass-frost-card text-cyan-200 hover:text-white transition-all flex items-center gap-1.5 px-3 sm:px-4"
             title={isMuted ? "播放《冰雪奇缘》主题曲《Let It Go》" : "暂停背景音乐"}
           >
             {isMuted ? (
               <>
                 <VolumeX className="w-4 h-4 text-cyan-300" />
-                <span className="text-xs font-semibold">🎵 播放《Let It Go》</span>
+                <span className="text-xs font-semibold">🎵 <span className="hidden sm:inline">播放《Let It Go》</span><span className="sm:hidden">播放</span></span>
               </>
             ) : (
               <>
                 <Volume2 className="w-4 h-4 text-cyan-300 animate-pulse" />
-                <span className="text-xs font-semibold text-cyan-300 animate-pulse">🎶 正在播放《Let It Go》</span>
+                <span className="text-xs font-semibold text-cyan-300 animate-pulse">🎶 <span className="hidden sm:inline">正在播放</span><span className="sm:hidden">播放中</span></span>
               </>
             )}
           </button>
@@ -149,12 +164,12 @@ function ElsaHeaderComponent({
               frozenAudio.playBell(1200, 0.2);
               onOpenShare();
             }}
-            className="glass-frost-btn text-xs py-2 px-3 sm:px-3.5 flex items-center gap-1.5 border-cyan-300/60 text-cyan-200 hover:text-white transition-all shadow-[0_0_15px_rgba(112,228,255,0.2)] hover:shadow-[0_0_20px_rgba(112,228,255,0.4)]"
+            className="glass-frost-btn text-xs py-2 px-2.5 sm:px-3.5 flex items-center gap-1.5 border-cyan-300/60 text-cyan-200 hover:text-white transition-all shadow-[0_0_15px_rgba(112,228,255,0.2)] hover:shadow-[0_0_20px_rgba(112,228,255,0.4)]"
             title="制作魔法拍立得与成长海报"
           >
             <Camera className="w-3.5 h-3.5 text-cyan-300" />
             <span className="hidden sm:inline font-bold">制作拍立得 / 海报 📸</span>
-            <span className="sm:hidden font-bold">拍立得</span>
+            <span className="sm:hidden font-bold">海报</span>
           </button>
 
           <button
@@ -162,7 +177,7 @@ function ElsaHeaderComponent({
               frozenAudio.playBell(800, 0.2);
               onOpenSettings();
             }}
-            className="p-3 rounded-full glass-frost-card text-cyan-200 hover:text-white transition-all"
+            className="p-2.5 sm:p-3 rounded-full glass-frost-card text-cyan-200 hover:text-white transition-all"
             title="定制信息"
           >
             <Settings className="w-4 h-4" />

@@ -16,8 +16,10 @@ import { ElsaCastleGraphic } from './components/ElsaCastleGraphic';
 import { AvatarCropModal } from './components/AvatarCropModal';
 import { FloatingMusicBar } from './components/FloatingMusicBar';
 import { AdminAuthModal } from './components/AdminAuthModal';
+import { ExternalLink, Sparkles } from 'lucide-react';
+import { GithubIcon } from './components/GithubIcon';
 import { calculateGrowthTime, type GrowthTime } from './utils/timeCalculator';
-import { DEFAULT_MILESTONES, PRESET_AVATARS } from './data/elsaPresetData';
+import { DEFAULT_MILESTONES, PRESET_AVATARS, GITHUB_REPO_URL } from './data/elsaPresetData';
 import { triggerFrozenMagicEffect } from './utils/magicEffects';
 import { loadImageSource } from './utils/imageHelper';
 import { frozenAudio } from './utils/audioSystem';
@@ -354,15 +356,51 @@ export function App() {
         onConfirmCrop={handleConfirmCrop}
       />
 
-      {/* Footer */}
-      <footer className="relative z-10 text-center py-6 border-t border-cyan-500/20 max-w-4xl mx-auto w-full px-4 text-xs text-cyan-200/60 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 font-medium">
-          <span>⏱️ TimeFlies</span>
-          <span>·</span>
-          <span>陪伴女儿长大的每一秒</span>
+      {/* Footer & DIY GitHub Prompt */}
+      <footer className="relative z-10 max-w-4xl mx-auto w-full px-4 pt-4 pb-8 flex flex-col gap-6">
+        {/* Glowing Ice Glassmorphism GitHub Callout Card */}
+        <div className="glass-frost-card p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 border border-cyan-400/40 shadow-[0_0_30px_rgba(34,211,238,0.18)]">
+          <div className="flex items-center gap-3 text-center sm:text-left flex-col sm:flex-row">
+            <div className="w-11 h-11 rounded-2xl bg-cyan-500/20 border border-cyan-300/40 flex items-center justify-center text-cyan-200 flex-shrink-0 shadow-[0_0_15px_rgba(34,211,238,0.3)]">
+              <GithubIcon className="w-5 h-5 text-cyan-200" />
+            </div>
+            <div>
+              <div className="text-sm sm:text-base font-bold text-white flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                <span>想要自己制作一份吗？</span>
+                <span className="text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full bg-cyan-400/15 border border-cyan-300/30 text-cyan-300 flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5 text-amber-300 animate-pulse" />
+                  开源免费 · 纯前端零门槛
+                </span>
+              </div>
+              <p className="text-xs text-cyan-200/70 mt-1">
+                欢迎关注并 Star 我的 GitHub 仓库，即可获取完整源码制作属于你家宝贝的时光胶囊 ❄️
+              </p>
+            </div>
+          </div>
+
+          <a
+            href={GITHUB_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => frozenAudio.playBell(1200, 0.2)}
+            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-500/80 via-sky-500/80 to-blue-600/80 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-[0_0_20px_rgba(34,211,238,0.35)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap group"
+          >
+            <GithubIcon className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+            <span>关注 GitHub 仓库</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+          </a>
         </div>
-        <div className="text-[11px] text-cyan-300/40">
-          Pure Front-end Magic · Zero Data Collection 🔒
+
+        {/* Bottom copyright line */}
+        <div className="pt-2 border-t border-cyan-500/15 text-xs text-cyan-200/60 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 font-medium">
+            <span>⏱️ TimeFlies</span>
+            <span>·</span>
+            <span>用心陪伴孩子长大的每一秒</span>
+          </div>
+          <div className="text-[11px] text-cyan-300/40">
+            Pure Front-end Magic · Zero Data Collection 🔒
+          </div>
         </div>
       </footer>
     </div>
