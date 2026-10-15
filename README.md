@@ -14,7 +14,7 @@
   用心记录陪伴女儿长大的每一秒 · 极简、精致、治愈的冰雪奇缘魔法成长纪念册
 </p>
 
-[✨ 在线体验](https://timeflies.vercel.app/) · [⭐ GitHub 仓库](https://github.com/reedtang666/TimeFlies) · [📖 部署教程](#-快速上手与部署指南-getting-started--deployment)
+[✨ 在线体验](https://time-flies-zeta.vercel.app/) · [⭐ GitHub 仓库](https://github.com/reedtang666/TimeFlies) · [📖 部署教程](#-快速上手与部署指南-getting-started--deployment)
 
 </div>
 
